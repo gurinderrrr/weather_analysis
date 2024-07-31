@@ -9,7 +9,7 @@ sns.set_style('whitegrid')
 import os
 import matplotlib.colors as colors
 
-fp = 'C:\\Users\\hp\\Desktop\\gurinder\\dist level shp file\\DISTRICT_BOUNDARY.shp'
+fp = 'C:\\Users\\hp\\Desktop\\gurinder\\district shape\\DISTRICT_BOUNDARY.shp'
 
 
 map_df = gpd.read_file(fp)
@@ -73,8 +73,8 @@ mah = mah[['DISTRICT','geometry']]
 
 
 
-mah.to_excel('C:\\Users\\hp\\Desktop\\shape test.xlsx')
+#mah.to_excel('C:\\Users\\hp\\Desktop\\shape test.xlsx')
 
 
 # Step 4: Save the subset as a new shapefile
-mah.to_file('C:\\Users\\hp\\Desktop\\gurinder\\district level shape file\\maharashtra district excluding vidarbha.shp')
+mah.to_file('C:\\Users\\hp\\Desktop\\gurinder\\filtered shape files\\maharashtra district excluding vidarbha.shp')
