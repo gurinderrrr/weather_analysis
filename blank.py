@@ -1,21 +1,14 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import geopandas as gpd
-import shapefile as shp
-from shapely.geometry import Point
-sns.set_style('whitegrid')
-import os
-import matplotlib.colors as colors
+import matplotlib.pyplot as plt
 
-fp = 'C:\\Users\\hp\\Desktop\\gurinder\\district shape\\DISTRICT_BOUNDARY.shp'
+shape_path='C:\\Users\\HP\\Desktop\\guri\\district shape\\DISTRICT_BOUNDARY.shp'
 
+gdf=gpd.read_file(shape_path)
 
-map_df = gpd.read_file(fp)
+#gdf=gdf.to_crs(epsg=4326)
 
 
-mah=map_df.loc[map_df['STATE'] == "MAH>R>SHTRA"].sort_values(['District'])
+mah=gdf.loc[gdf['STATE'] == "MAH>R>SHTRA"].sort_values(['District'])
 
 mah['District'] = mah['District'].str.upper()
 
@@ -71,12 +64,24 @@ mah.drop(mah_drop, inplace=True)
 
 mah = mah[['DISTRICT','geometry']]
 
-mah = mah.to_crs(epsg=4326)
+# Plot the shapefile
+fig, ax = plt.subplots(figsize=(15, 10))
+mah.plot(ax=ax, color='lightgrey', edgecolor='black', linewidth=1)
 
 
+# Add taluka names
+for x, y, dist in zip(mah.centroid.geometry.x, mah.centroid.geometry.y, mah['DISTRICT']):
+    ax.text(x, y, dist, ha='center', va='center', fontsize=4, color='black')
 
-#mah.to_excel('C:\\Users\\hp\\Desktop\\shape test.xlsx')
 
+# Set x and y limits to "zoom" the area
+xmin, xmax = mah.total_bounds[0], mah.total_bounds[2]  # Get min and max x values
+ymin, ymax = mah.total_bounds[1], mah.total_bounds[3]  # Get min and max y values
 
-# Step 4: Save the subset as a new shapefile
-mah.to_file('C:\\Users\\hp\\Desktop\\gurinder\\filtered shape files\\maharashtra district excluding vidarbha.shp')
+# Adjust these values to zoom in or out
+padding = 0.1  # Add some padding to make sure the labels fit
+ax.set_xlim(xmin - padding, xmax + padding)
+ax.set_ylim(ymin - padding, ymax + padding)
+
+#gdf.plot()
+plt.show()
