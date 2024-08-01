@@ -13,7 +13,7 @@ fp = 'C:\\Users\\hp\\Desktop\\gurinder\\dist level shp file\\DISTRICT_BOUNDARY.s
 
 
 map_df = gpd.read_file(fp)
-map_df = map_df.to_crs(epsg=4326)
+
 
 mah=map_df.loc[map_df['STATE'] == "MAH>R>SHTRA"].sort_values(['District'])
 
@@ -70,6 +70,8 @@ mah.drop(mah_drop, inplace=True)
 
 
 mah = mah[['DISTRICT','geometry']]
+
+mah = mah.to_crs(epsg=4326)
 
 
 
