@@ -540,7 +540,7 @@ with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
         worksheet.set_column('J:J', 4)
  
 
-
+exit()
 # Iterate through each district in the combined DataFrame
 for district_name in complete_combined['DISTRICT'].unique():
     df_district = complete_combined[complete_combined['DISTRICT'] == district_name]
