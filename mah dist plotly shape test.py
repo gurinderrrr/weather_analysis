@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.io as pio
 import plotly.graph_objects as go
 
-shapefile_path='C:\\Users\\hp\\Desktop\\gurinder\\filtered shape files\\maharashtra district excluding vidarbha.shp'
+shapefile_path='C:\\Users\\hp\\Desktop\\gurinder\\python test\\maharashtra district excluding vidarbha.shp'
 
 gdf=gpd.read_file(shapefile_path)
 
