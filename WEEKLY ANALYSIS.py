@@ -120,7 +120,9 @@ print('Checking if the AWS/ARG website is working...')
 try:
 
     #Collect today's data (adjust your URLs accordingly)
-    today_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=AWSAGRO&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e={d0}&f={d1}&g=ALL_HOUR&h=ALL_MINUTE')[0]
+    combine_tday_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=AWSAGRO&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e={d0}&f={d1}&g=ALL_HOUR&h=ALL_MINUTE')[0]
+                                    #collect todays arg tabular data
+    arg_combine_tday_mh=pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=ARG&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e={d0}&f={d1}&g=ALL_HOUR&h=ALL_MINUTE')[0]
 
     print('Website working.')
 
@@ -129,47 +131,49 @@ except Exception as e:
     time.sleep(5)
     exit()
 
-#print(today_mh.info())
+#print(combine_tday_mh.info())
 
 print('Filtering Data...')
 
+                                #combine the two dataframes
+combine_tday_mh=pd.concat([combine_tday_mh,arg_combine_tday_mh], ignore_index=True)
+
                            #drop vidarbha stations
-mah_drop_today = today_mh[(today_mh['DISTRICT'] == 'AKOLA') | (today_mh['DISTRICT'] == 'AMRAVATI')|
-(today_mh['DISTRICT'] == 'BHANDARA') | (today_mh['DISTRICT'] == 'BULDHANA')|
-(today_mh['DISTRICT'] == 'CHANDRAPUR') | (today_mh['DISTRICT'] == 'GADCHIROLI')|
-(today_mh['DISTRICT'] == 'GONDIA') | (today_mh['DISTRICT'] == 'NAGPUR')|
-(today_mh['DISTRICT'] == 'YAVATMAL') | (today_mh['DISTRICT'] == 'WARDHA')|
-(today_mh['DISTRICT'] == 'WASHIM')].index
+mah_drop_today = combine_tday_mh[(combine_tday_mh['DISTRICT'] == 'AKOLA') | (combine_tday_mh['DISTRICT'] == 'AMRAVATI')|
+(combine_tday_mh['DISTRICT'] == 'BHANDARA') | (combine_tday_mh['DISTRICT'] == 'BULDHANA')|
+(combine_tday_mh['DISTRICT'] == 'CHANDRAPUR') | (combine_tday_mh['DISTRICT'] == 'GADCHIROLI')|
+(combine_tday_mh['DISTRICT'] == 'GONDIA') | (combine_tday_mh['DISTRICT'] == 'NAGPUR')|
+(combine_tday_mh['DISTRICT'] == 'YAVATMAL') | (combine_tday_mh['DISTRICT'] == 'WARDHA')|
+(combine_tday_mh['DISTRICT'] == 'WASHIM')].index
 
-today_mh.drop(mah_drop_today, inplace=True)
-
-
+combine_tday_mh.drop(mah_drop_today, inplace=True)
 
 
 
 
 
-   #choose columns to include in today_mh
-today_mh=today_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP DAY MIN. (\'C)','TEMP DAY MAX. (\'C)','TEMP. (\'C)','RH (%)','SLP (hPa)','MSLP (hPa / gpm)','BATTERY (Volts)','GPS']]
 
-#print(today_mh)
+
+   #choose columns to include in combine_tday_mh
+combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP DAY MIN. (\'C)','TEMP DAY MAX. (\'C)','TEMP. (\'C)','RH (%)','SLP (hPa)','MSLP (hPa / gpm)','BATTERY (Volts)','GPS']]
+
 
 
 
 
                        #replace names
-today_mh.columns=today_mh.columns.str.replace('DATE(YYYY-MM-DD)', 'DATE',regex=False)
-today_mh.columns=today_mh.columns.str.replace('RAIN FALL CUM. SINCE 0300 UTC (mm)', 'RF',regex=False)
-today_mh.columns=today_mh.columns.str.replace('TEMP DAY MIN. (\'C)', 'MIN T',regex=False)
-today_mh.columns=today_mh.columns.str.replace('TEMP DAY MAX. (\'C)', 'MAX T',regex=False)
-today_mh.columns=today_mh.columns.str.replace('TEMP. (\'C)', 'TEMP',regex=False)
-today_mh.columns=today_mh.columns.str.replace('SLP (hPa)', 'SLP',regex=False)
-today_mh.columns=today_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('DATE(YYYY-MM-DD)', 'DATE',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('RAIN FALL CUM. SINCE 0300 UTC (mm)', 'RF',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('TEMP DAY MIN. (\'C)', 'MIN T',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('TEMP DAY MAX. (\'C)', 'MAX T',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('TEMP. (\'C)', 'TEMP',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('SLP (hPa)', 'SLP',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
 
-#print(today_mh)
+#print(combine_tday_mh)
 
-# Perform a left merge to include all stations from canary_mh in today_mh
-merged = pd.merge(all_stations, today_mh, on='STATION', how='left')
+# Perform a left merge to include all stations from canary_mh in combine_tday_mh
+merged = pd.merge(all_stations, combine_tday_mh, on='STATION', how='left')
 
 #print(merged)
 #print(merged.nunique())
@@ -209,7 +213,7 @@ df['TIME (UTC)'] = df['TIME (UTC)'].dt.strftime('%H:%M')
 
 
 # Combine DATE and TIME (UTC) columns into DATETIME (UTC) 
-df['DATE , TIME(UTC)'] = df['DATE']+","+ df['TIME (UTC)']
+df['DATE TIME(UTC)'] = df['DATE']+" "+ df['TIME (UTC)']
 
 
 
@@ -233,7 +237,7 @@ end_datetime = d1 + ' 03:00'
 frequency = '15min'
 
 #Create a datetime range
-datetime_range = pd.date_range(start=start_datetime, end=end_datetime, freq=frequency).strftime('%d-%m-%Y'+' , '+'%H:%M')
+datetime_range = pd.date_range(start=start_datetime, end=end_datetime, freq=frequency).strftime('%d-%m-%Y %H:%M')
 
 #print(datetime_range)
 
@@ -244,7 +248,7 @@ datetime_range = pd.date_range(start=start_datetime, end=end_datetime, freq=freq
 
 
 # Create a DataFrame with the datetime range
-datetime_df = pd.DataFrame(datetime_range, columns=['DATE , TIME(UTC)'])
+datetime_df = pd.DataFrame(datetime_range, columns=['DATE TIME(UTC)'])
 
 #print(datetime_df)
 #print('rows in datetime_df: ',len(datetime_df))
@@ -252,16 +256,17 @@ datetime_df = pd.DataFrame(datetime_range, columns=['DATE , TIME(UTC)'])
 
 # Extract unique values
 stations = df['STATION'].unique()
-datetimes = datetime_df['DATE , TIME(UTC)'].unique()
+datetimes = datetime_df['DATE TIME(UTC)'].unique()
 
 # Create a DataFrame with all combinations of 'station' and 'datetime'
-all_combinations = pd.DataFrame(list(itertools.product(stations, datetimes)), columns=['STATION', 'DATE , TIME(UTC)'])
+all_combinations = pd.DataFrame(list(itertools.product(stations, datetimes)), columns=['STATION', 'DATE TIME(UTC)'])
 
 # Merge with the original df to include all stations and all datetimes
-complete_combined = pd.merge(all_combinations, df, on=['STATION', 'DATE , TIME(UTC)'], how='left')
+complete_combined = pd.merge(all_combinations, df, on=['STATION', 'DATE TIME(UTC)'], how='left')
 
 
 #print(complete_combined)
+
 #print('unique stations in complete_combined: ',complete_combined['STATION'].nunique())
 #print('unique datetime in complete_combined: ',complete_combined['DATETIME (UTC)'].nunique())
 
@@ -305,7 +310,7 @@ def map_dis_to_sta_mh(row):
         'CHRIST_UNIVERSITY_LAVASA': 'PUNE',
         'CME_DAPODI': 'PUNE',
         'DPS_HADAPSAR_PUNE': 'PUNE',
-        'INS SHIVAJI_LONAVALA': 'PUNE',
+        'INS_SHIVAJI_LONAVALA': 'PUNE',
         'KHUTBAV_DAUND': 'PUNE',
         'LONIKALBHOR_HAVELI': 'PUNE',
         'NARAYANGOAN_KRISHI_KENDRA': 'PUNE',
@@ -443,16 +448,19 @@ complete_combined['AWS/ARG'] = complete_combined['STATION'].apply(check_aws)
 
 #complete_combined['DATETIME (UTC)'] = pd.to_datetime(complete_combined['DATETIME (UTC)'])
 
-complete_combined = complete_combined[['DISTRICT', 'STATION','AWS/ARG', 'DATE , TIME(UTC)', 'RF', 'MIN T', 'MAX T', 'TEMP', 'RH (%)','SLP', 'MSLP', 'BATTERY (Volts)', 'GPS']]
+complete_combined = complete_combined[['DISTRICT', 'STATION','AWS/ARG', 'DATE TIME(UTC)', 'RF', 'MIN T', 'MAX T', 'TEMP', 'RH (%)','SLP', 'MSLP', 'BATTERY (Volts)', 'GPS']]
 
 print('Filtering data done.')
 
 print('Applying colors...')
 
 #print(complete_combined)
+#complete_combined.to_excel('C:\\Users\\hp\\Desktop\\complete test.xlsx')
 
 #print(complete_combined.info())
-#print(complete_combined.info())
+
+
+
 
 
 def rf(s, props='background-color:red;color:yellow;font-weight:bold'):
@@ -483,7 +491,8 @@ def gps(s, props='background-color:red;color:yellow;font-weight:bold'):
 print('Creating Excel File...')
 # File path for the Excel file
 # Define the file path
-file_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop\\WEEKLY ANALYSIS('+d0_2+' to'+d1_2+').xlsx')
+file_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'OneDrive\\daily data\\WEEKLY ANALYSIS ('+d0_2+' to '+d1_2+').xlsx')
+
 
 
 # Create a Pandas Excel writer using XlsxWriter as the engine
@@ -493,7 +502,7 @@ with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
     for district in complete_combined['DISTRICT'].unique():
 
     # Filter the DataFrame for the current district and drop the 'DISTRICT' column
-        district_df = complete_combined[complete_combined['DISTRICT'] == district]
+        district_df = complete_combined[complete_combined['DISTRICT'] == district].drop(columns=['DISTRICT'])
         
         # Apply highlighting and styling to the district_data
         district_df.style.set_table_styles([
@@ -514,20 +523,22 @@ with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
         workbook = writer.book
         worksheet = writer.sheets[district]
 
-print('Excel file created for Maharashtra')
-exit()
+
+
         
         # Set column widths (example widths, adjust as needed)
-        #worksheet.set_column('A:A', 30)
-        #worksheet.set_column('B:B', 20)
-        #worksheet.set_column('C:C', 9)
-        #worksheet.set_column('D:D', 7)
-        #worksheet.set_column('E:E', 7)
-        #worksheet.set_column('F:F', 7)
-        #worksheet.set_column('G:G', 9)
-        #worksheet.set_column('H:H', 15)
-        #worksheet.set_column('I:I', 15)
-        #worksheet.set_column('J:J', 20)
-        #worksheet.set_column('K:K', 5)
+        worksheet.set_column('A:A', 30)
+        worksheet.set_column('B:B', 10)
+        worksheet.set_column('C:C', 20)
+        worksheet.set_column('D:D', 10)
+        worksheet.set_column('E:E', 7)
+        worksheet.set_column('F:F', 7)
+        worksheet.set_column('G:G', 7)
+        worksheet.set_column('H:H', 9)
+        worksheet.set_column('I:I', 10)
+        worksheet.set_column('J:J', 10)
+        worksheet.set_column('K:K', 20)
+        worksheet.set_column('L:L', 5)
 
-#print('Excel file created for Maharashtra')
+
+print('Excel file created for Maharashtra')
