@@ -8,8 +8,8 @@ shapefile_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\maharashtra dis
 gdf = gpd.read_file(shapefile_path)
 
 # Print CRS and geometry type for verification
-print(gdf.geometry.type)
-print(gdf.crs)
+#print(gdf.geometry.type)
+#print(gdf.crs)
 
 # Re-project to UTM Zone 43N
 #gdf = gdf.to_crs(epsg=32643)
