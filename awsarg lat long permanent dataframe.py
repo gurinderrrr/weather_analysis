@@ -3,6 +3,7 @@ from datetime import date, time, datetime, timedelta
 import geopandas as gpd
 import plotly.express as px
 import plotly.graph_objects as go
+import json
 
 
 
@@ -142,7 +143,7 @@ index_mh=combined_all_stations.set_index("STATION")
 
 df=index_mh.copy()
 del index_mh
-print(df)
+#print(df)
 
 df['STATIONS']=df.index
 
@@ -150,7 +151,7 @@ df['STATIONS']=df.index
 df.reset_index(inplace=True)
 
 
-print(df)
+#print(df)
 
 
 
@@ -796,46 +797,62 @@ df = df[['S.No.','DISTRICT','STATIONS','TYPE','RF','LAT','LONG']]
 df['LAT'] = pd.to_numeric(df['LAT'], errors='coerce')
 df['LONG'] = pd.to_numeric(df['LONG'], errors='coerce')
 
-print(df)
-print(df.info())
+#print(df)
+#print(df.info())
 
 
 shapefile_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\maharashtra district excluding vidarbha.shp'
 gdf = gpd.read_file(shapefile_path)
 
+# Convert the GeoDataFrame to GeoJSON format
+geojson = json.loads(gdf.to_json())
 
-# Convert the GeoDataFrame to GeoJSON format for Plotly
-geojson = gdf.__geo_interface__
 
-# Create a Plotly map
-fig = go.Figure(go.Choroplethmapbox(geojson=geojson, locations=gdf.index, z=gdf.index, 
-                                    colorscale="Viridis", marker_opacity=0.5, marker_line_width=0.5))
+# Plot using Plotly Graph Objects
+fig = go.Figure()
 
-# Add scatter plot for rainfall values
-scatter = go.Scattermapbox(
-    lat=df['LAT'],
-    lon=df['LONG'],
-    mode='markers',
-    marker=go.scattermapbox.Marker(
-        size=14,
-        color=df['RF'],
-        colorscale='Viridis',
-        showscale=True,
-        colorbar=dict(title="Rainfall (mm)")
-    ),
-    text=df['DISTRICT'],
-)
+# Add shapefile boundaries
+for feature in geojson['features']:
+    coords = feature['geometry']['coordinates']
+    if feature['geometry']['type'] == 'Polygon':
+        lon, lat = zip(*coords[0])
+        fig.add_trace(go.Scattermapbox(
+            lon=lon,
+            lat=lat,
+            mode='lines',
+            line=dict(width=1, color='black'),
+            fill='toself',
+            fillcolor='rgba(0,100,80,0.2)'
+        ))
+    elif feature['geometry']['type'] == 'MultiPolygon':
+        for polygon in coords:
+            lon, lat = zip(*polygon[0])
+            fig.add_trace(go.Scattermapbox(
+                lon=lon,
+                lat=lat,
+                mode='lines',
+                line=dict(width=1, color='black'),
+                fill='toself',
+                fillcolor='rgba(0,100,80,0.2)'
+            ))
 
-fig.add_trace(scatter)
+# Center of the bounding box
+bounds = gdf.total_bounds
+center_lon = (bounds[0] + bounds[2]) / 2
+center_lat = (bounds[1] + bounds[3]) / 2
 
 # Update layout for the map
 fig.update_layout(
     mapbox=dict(
-        style="carto-positron",
-        zoom=5,
-        center=dict(lat=19, lon=75)
+        style='white-bg',  # Plain background
+        center=dict(lat=center_lat, lon=center_lon),
+        zoom=5.8  # Adjust the zoom level as needed
     ),
-    margin={"r":0,"t":0,"l":0,"b":0}
+    margin={"r":0,"t":0,"l":0,"b":0},
+    title="Custom Map of GeoDataFrame",
+    legend=dict(
+        visible=False
+    )
 )
 
-fig.show()
+fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\plotly awarg test.html')
