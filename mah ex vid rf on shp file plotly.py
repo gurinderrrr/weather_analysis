@@ -1,3 +1,4 @@
+print('importing required libraries')
 import pandas as pd
 from datetime import date, time, datetime, timedelta
 import geopandas as gpd
@@ -181,7 +182,7 @@ def map_dist(row):
         'BHIRA':'RAIGAD',
         'MURUD':'RAIGAD',
         'POLADPUR':'RAIGAD',
-        'INS SHIVAJI_LONAVALA':'PUNE',
+        'INS_SHIVAJI_LONAVALA':'PUNE',
         'TALEGAON':'PUNE',
         'GIRIVAN':'PUNE',
         'CHINCHWAD_PUNE':'PUNE',
@@ -190,7 +191,7 @@ def map_dist(row):
         'RJSPMCOP_DUDULGAON':'PUNE',
         'LAVALE':'PUNE',
         'SHIVAJINAGAR_PUNE':'PUNE',
-        'AWS_LAB_PASHAN':'PUNE',
+        'PASHAN_AWS_LAB':'PUNE',
         'RAJGURUNAGAR':'PUNE',
         'BLINDSCHOOL_KP_PUNE':'PUNE',
         'NDA_PUNE':'PUNE',
@@ -215,8 +216,8 @@ def map_dist(row):
         'NES_LAKADI_INDAPUR':'PUNE',
         'BHANDARDARA':'AHMEDNAGAR',
         'PARNER':'AHMEDNAGAR',
-        'KOPARGAON':'AHMEDNAGAR',
-        'SHREEGONDA':'AHMEDNAGAR',
+        'KOPERGAON':'AHMEDNAGAR',
+        'SHRIGONDA':'AHMEDNAGAR',
         'AHMEDNAGAR':'AHMEDNAGAR',
         'RAHURI':'AHMEDNAGAR',
         'SHEVGAON':'AHMEDNAGAR',
@@ -230,7 +231,7 @@ def map_dist(row):
         'MALEGAON':'NASHIK',
         'DAPOLI':'RATNAGIRI',
         'SAVARDE(GOLWANE)':'RATNAGIRI',
-        'POWARWADI':'RATNAGIRI',
+        'POWARWADI(BHAMBHED)':'RATNAGIRI',
         'CHIPLUN':'RATNAGIRI',
         'RATNAGIRI':'RATNAGIRI',
         'RATNAGIRI_AWS400':'RATNAGIRI',
@@ -243,7 +244,7 @@ def map_dist(row):
         'KARMALA':'SOLAPUR',
         'SOLAPUR':'SOLAPUR',
         'SANGOLA_MAHAVIDYALAYA':'SOLAPUR',
-        'AKKALKOT':'SHOLAPUR',
+        'AKKALKOT':'SOLAPUR',
         'KOLHAPUR_AMFU':'KOLHAPUR',
         'SHAHUWADI':'KOLHAPUR',
         'PANHALA':'KOLHAPUR',
@@ -272,7 +273,7 @@ def map_dist(row):
         'SHAHADA_AWS400':'NANDURBAR',
         'JALNA':'JALNA',
         'BHOKARDAN':'JALNA',
-        'GHANSANGHVI':'JALNA',
+        'GHANSANGAVI':'JALNA',
         'PARTUR':'JALNA',
         'VAIBHAVWADI':'SIDHUDURG',
         'AWALEGAON':'SIDHUDURG',
@@ -337,7 +338,7 @@ def map_type(row):
 'BHIRA':'ARG',
 'MURUD':'AWS',
 'POLADPUR':'ARG',
-'INS SHIVAJI_LONAVALA':'AWS',
+'INS_SHIVAJI_LONAVALA':'AWS',
 'TALEGAON':'ARG',
 'GIRIVAN':'ARG',
 'CHINCHWAD_PUNE':'ARG',
@@ -346,7 +347,7 @@ def map_type(row):
 'RJSPMCOP_DUDULGAON':'ARG',
 'LAVALE':'ARG',
 'SHIVAJINAGAR_PUNE':'ARG',
-'AWS_LAB_PASHAN':'AWS',
+'PASHAN_AWS_LAB':'AWS',
 'RAJGURUNAGAR':'AWS',
 'BLINDSCHOOL_KP_PUNE':'ARG',
 'NDA_PUNE':'ARG',
@@ -371,8 +372,8 @@ def map_type(row):
 'NES_LAKADI_INDAPUR':'ARG',
 'BHANDARDARA':'ARG',
 'PARNER':'ARG',
-'KOPARGAON':'AWS',
-'SHREEGONDA':'ARG',
+'KOPERGAON':'AWS',
+'SHRIGONDA':'ARG',
 'AHMEDNAGAR':'AWS',
 'RAHURI':'AWS',
 'SHEVGAON':'ARG',
@@ -386,9 +387,9 @@ def map_type(row):
 'MALEGAON':'AWS',
 'DAPOLI':'AWS',
 'SAVARDE(GOLWANE)':'ARG',
-'POWARWADI':'ARG',
+'POWARWADI(BHAMBHED)':'ARG',
 'CHIPLUN':'ARG',
-'RATNAGIRI':'ARG',
+'RATNAGIRI':'AWS',
 'RATNAGIRI_AWS400':'AWS',
 'MAHABALESHWAR':'AWS',
 'PANCHGANI':'ARG',
@@ -428,7 +429,7 @@ def map_type(row):
 'SHAHADA_AWS400':'AWS',
 'JALNA':'ARG',
 'BHOKARDAN':'ARG',
-'GHANSANGHVI':'ARG',
+'GHANSANGAVI':'ARG',
 'PARTUR':'ARG',
 'VAIBHAVWADI':'ARG',
 'AWALEGAON':'ARG',
@@ -475,7 +476,7 @@ def map_lat(row):
 'MAHALAXMI':'18.9799',
 'MATUNGA_MUMBAI':'19.03203',
 'SION_MUMBAI':'19.051943',
-'MUMBAI_SANTACRUZ':'19.10064',
+'MUMBAI_SANTA_CRUZ':'19.10064',
 'TATA POWER CHEMBUR':'19.004494',
 'BANDRA':'19.067',
 'MUMBAI AIRPORT':'19.0931',
@@ -494,7 +495,7 @@ def map_lat(row):
 'BHIRA':'18.27',
 'MURUD':'18.3311',
 'POLADPUR':'17.981371',
-'INS SHIVAJI_LONAVALA':'18.724',
+'INS_SHIVAJI_LONAVALA':'18.724',
 'TALEGAON':'18.722',
 'GIRIVAN':'18.5607',
 'CHINCHWAD_PUNE':'18.6595',
@@ -503,7 +504,7 @@ def map_lat(row):
 'RJSPMCOP_DUDULGAON':'18.6769',
 'LAVALE':'18.5363',
 'SHIVAJINAGAR_PUNE':'18.5286',
-'AWS_LAB_PASHAN':'18.5167',
+'PASHAN_AWS_LAB':'18.5167',
 'RAJGURUNAGAR':'18.841',
 'BLINDSCHOOL_KP_PUNE':'18.54',
 'NDA_PUNE':'18.47',
@@ -528,8 +529,8 @@ def map_lat(row):
 'NES_LAKADI_INDAPUR':'18.1748',
 'BHANDARDARA':'19.33',
 'PARNER':'19',
-'KOPARGAON':'19.87598',
-'SHREEGONDA':'18.620098',
+'KOPERGAON':'19.87598',
+'SHRIGONDA':'18.620098',
 'AHMEDNAGAR':'19.08825',
 'RAHURI':'19.36654',
 'SHEVGAON':'19.347307',
@@ -543,7 +544,7 @@ def map_lat(row):
 'MALEGAON':'20.5692',
 'DAPOLI':'17.75419',
 'SAVARDE(GOLWANE)':'17.394104',
-'POWARWADI':'16.817108',
+'POWARWADI(BHAMBHED)':'16.817108',
 'CHIPLUN':'17.31',
 'RATNAGIRI':'16.98617',
 'RATNAGIRI_AWS400':'16.985963',
@@ -552,12 +553,12 @@ def map_lat(row):
 'SATARA':'17.68806',
 'PHALTAN':'17.98',
 'BGRL_KARAD':'17.2977',
-'MOHOL_KVK':'17.80917',
+'MOHOL_KVK':'17.4833',
 'KARMALA':'18.9',
 'SOLAPUR':'17.67017',
 'SANGOLA_MAHAVIDYALAYA':'17.420765',
 'AKKALKOT':'17.51',
-'KOLHAPUR_AMFU':'17.67361',
+'KOLHAPUR_AMFU':'16.6733',
 'SHAHUWADI':'16.9',
 'PANHALA':'16.81279',
 'RADHANAGRI_ARS':'16.41029',
@@ -565,7 +566,7 @@ def map_lat(row):
 'GANGAPUR':'19.705767',
 'PAITHAN':'19.48',
 'AURANGABAD_KVK':'19.8512',
-'AURANGABAD':'19.85594',
+'AURANGABAD':'19.8561',
 'KANNAD':'20.256844',
 'CHALISGAON':'20.462271',
 'CHOPDA':'21.23',
@@ -585,7 +586,7 @@ def map_lat(row):
 'SHAHADA_AWS400':'21.5347',
 'JALNA':'19.82642',
 'BHOKARDAN':'20.239645',
-'GHANSANGHVI':'19.522394',
+'GHANSANGAVI':'19.522394',
 'PARTUR':'19.589642',
 'VAIBHAVWADI':'16.49',
 'AWALEGAON':'16.11779',
@@ -632,7 +633,7 @@ def map_long(row):
 'MAHALAXMI':'72.8231',
 'MATUNGA_MUMBAI':'72.853127',
 'SION_MUMBAI':'72.866837',
-'MUMBAI_SANTACRUZ':'72.85822',
+'MUMBAI_SANTA_CRUZ':'72.85822',
 'TATA POWER CHEMBUR':'72.904526',
 'BANDRA':'72.8409',
 'MUMBAI AIRPORT':'72.8568',
@@ -651,7 +652,7 @@ def map_long(row):
 'BHIRA':'73.23',
 'MURUD':'72.9544',
 'POLADPUR':'73.466118',
-'INS SHIVAJI_LONAVALA':'73.3697',
+'INS_SHIVAJI_LONAVALA':'73.3697',
 'TALEGAON':'73.6632',
 'GIRIVAN':'73.5211',
 'CHINCHWAD_PUNE':'73.7987',
@@ -660,7 +661,7 @@ def map_long(row):
 'RJSPMCOP_DUDULGAON':'73.87664',
 'LAVALE':'73.7325',
 'SHIVAJINAGAR_PUNE':'73.8493',
-'AWS_LAB_PASHAN':'73.85',
+'PASHAN_AWS_LAB':'73.85',
 'RAJGURUNAGAR':'73.884',
 'BLINDSCHOOL_KP_PUNE':'73.8886',
 'NDA_PUNE':'73.78',
@@ -685,8 +686,8 @@ def map_long(row):
 'NES_LAKADI_INDAPUR':'74.689',
 'BHANDARDARA':'73.45',
 'PARNER':'74.26',
-'KOPARGAON':'74.4829',
-'SHREEGONDA':'74.698341',
+'KOPERGAON':'74.4829',
+'SHRIGONDA':'74.698341',
 'AHMEDNAGAR':'74.74679',
 'RAHURI':'74.64379',
 'SHEVGAON':'75.218307',
@@ -700,7 +701,7 @@ def map_long(row):
 'MALEGAON':'73.6889',
 'DAPOLI':'73.17675',
 'SAVARDE(GOLWANE)':'73.489136',
-'POWARWADI':'73.632874',
+'POWARWADI(BHAMBHED)':'73.632874',
 'CHIPLUN':'73.32',
 'RATNAGIRI':'73.32833',
 'RATNAGIRI_AWS400':'73.328275',
@@ -709,7 +710,7 @@ def map_long(row):
 'SATARA':'74.02639',
 'PHALTAN':'74.43',
 'BGRL_KARAD':'74.1238',
-'MOHOL_KVK':'73.71667',
+'MOHOL_KVK':'75.3815',
 'KARMALA':'75.19',
 'SOLAPUR':'75.6375',
 'SANGOLA_MAHAVIDYALAYA':'75.194714',
@@ -722,7 +723,7 @@ def map_long(row):
 'GANGAPUR':'75.001839',
 'PAITHAN':'75.2833',
 'AURANGABAD_KVK':'75.2968',
-'AURANGABAD':'75.29924',
+'AURANGABAD':'75.2853',
 'KANNAD':'75.137871',
 'CHALISGAON':'75.003738',
 'CHOPDA':'75.29',
@@ -742,7 +743,7 @@ def map_long(row):
 'SHAHADA_AWS400':'74.4859',
 'JALNA':'75.87206',
 'BHOKARDAN':'75.766083',
-'GHANSANGHVI':'75.999146',
+'GHANSANGAVI':'75.999146',
 'PARTUR':'76.211868',
 'VAIBHAVWADI':'73.74',
 'AWALEGAON':'73.758484',
@@ -794,6 +795,7 @@ df.insert(0, 'S.No.', range(1, 1 + len(df)))
 # Reorder columns as needed
 df = df[['S.No.','DISTRICT','STATIONS','TYPE','RF','LAT','LONG']]
 
+df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
 df['LAT'] = pd.to_numeric(df['LAT'], errors='coerce')
 df['LONG'] = pd.to_numeric(df['LONG'], errors='coerce')
 
@@ -801,11 +803,41 @@ df['LONG'] = pd.to_numeric(df['LONG'], errors='coerce')
 #print(df.info())
 
 
+# Define the custom color function
+def color_range(rf_value):
+    if pd.isna(rf_value):  # Handle NaN values
+        return 'pink'
+    elif rf_value % 0.5 != 0:  # if not multiple of 0.5
+        return 'white'
+    elif rf_value == 0:  # if 0
+        return 'silver'
+    elif 0 < rf_value <= 2.5:  # vlr
+        return '#98FB98'
+    elif 2.6 <= rf_value <= 15.5:  # lr
+        return '#7FFF00'
+    elif 15.6 <= rf_value <= 64.5:  # mr
+        return '#228B22'
+    elif 64.6 <= rf_value <= 115.5:  # hr
+        return '#FFFF00'
+    elif 115.6 <= rf_value <= 204.5:  # vhr
+        return '#FF8C00'
+    elif rf_value > 204.5:  # ehr
+        return '#FF0000'
+    else:
+        return '#00008B'
+
+
 shapefile_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\maharashtra district excluding vidarbha.shp'
 gdf = gpd.read_file(shapefile_path)
 
 # Convert the GeoDataFrame to GeoJSON format
 geojson = json.loads(gdf.to_json())
+
+
+# Calculate the centroid of each district polygon
+gdf['centroid'] = gdf.geometry.centroid
+gdf['centroid_lon'] = gdf.centroid.x
+gdf['centroid_lat'] = gdf.centroid.y
 
 
 # Plot using Plotly Graph Objects
@@ -822,7 +854,8 @@ for feature in geojson['features']:
             mode='lines',
             line=dict(width=1, color='black'),
             fill='toself',
-            fillcolor='rgba(0,100,80,0.2)'
+            fillcolor='rgba(0,100,80,0.2)',
+            showlegend=False  # Hide the legend
         ))
     elif feature['geometry']['type'] == 'MultiPolygon':
         for polygon in coords:
@@ -833,8 +866,45 @@ for feature in geojson['features']:
                 mode='lines',
                 line=dict(width=1, color='black'),
                 fill='toself',
-                fillcolor='rgba(0,100,80,0.2)'
+                fillcolor='rgba(0,100,80,0.2)',
+                showlegend=False  # Hide the legend
             ))
+
+# Add district names as text annotations
+for _, row in gdf.iterrows():
+    fig.add_trace(go.Scattermapbox(
+        lon=[row['centroid_lon']],
+        lat=[row['centroid_lat']],
+        mode='text',
+        text=row['DISTRICT'],
+        showlegend=False,
+        textfont=dict(size=10, color='black')  # Adjust text size and color as needed
+    ))
+
+# Apply custom color function to the dataframe
+df['color'] = df['RF'].apply(color_range)
+
+
+# Add station points with RF values
+fig.add_trace(go.Scattermapbox(
+    lon=df['LONG'],
+    lat=df['LAT'],
+    mode='markers',
+    marker=dict(
+        size=10,  # Adjust size based on RF or fixed size
+        color=df['color'],  # Use custom colors
+    ),
+    text=df.apply(
+        lambda row: (
+            f"          <b>{row['TYPE']}</b><br>"
+            f"Station: {row['STATIONS']}<br>"
+            f"Rainfall: {'DATA NOT AVAILABLE' if pd.isna(row['RF']) else f'{row['RF']} mm'}"
+        ), 
+        axis=1
+    ),
+    hoverinfo='text'
+))
+
 
 # Center of the bounding box
 bounds = gdf.total_bounds
@@ -848,11 +918,17 @@ fig.update_layout(
         center=dict(lat=center_lat, lon=center_lon),
         zoom=5.8  # Adjust the zoom level as needed
     ),
-    margin={"r":0,"t":0,"l":0,"b":0},
-    title="Custom Map of GeoDataFrame",
-    legend=dict(
-        visible=False
-    )
+     margin={"r":0,"t":30,"l":0,"b":0},  # Adjusted top margin to make room for the title
+    title={
+        'text': "Custom Map of GeoDataFrame",
+        'y':0.98,  # Adjust title position
+        'x':0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'
+    }   
+    
+     
+
 )
 
 fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\plotly awarg test.html')
