@@ -93,7 +93,7 @@ all_mh=['MUMBAI_COLABA','BYCULLA_MUMBAI','MAHALAXMI','MATUNGA_MUMBAI','SION_MUMB
 ]
 
 
-#print(len(all_mh))
+print(len(all_mh))
 
 print('Checking if the AWS/ARG website is working...')
 
