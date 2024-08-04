@@ -893,6 +893,7 @@ fig.add_trace(go.Scattermapbox(
     marker=dict(
         size=10,  # Adjust size based on RF or fixed size
         color=df['color'],
+        symbol='https://github.com/gurinderrrr/weather_analysis/blob/41e2b2ccacb0ddac7de7892bd85b2eb17ddab8d8/aerialway.svg'
     ),
     text=df.apply(
         lambda row: (
@@ -914,7 +915,7 @@ center_lat = (bounds[1] + bounds[3]) / 2
 # Update layout for the map
 fig.update_layout(
     mapbox=dict(
-        style='basic',  # Plain background
+        style='white-bg',  # Plain background
         center=dict(lat=center_lat, lon=center_lon),
         zoom=5.8  # Adjust the zoom level as needed
     ),
