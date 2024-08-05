@@ -898,7 +898,7 @@ fig.add_trace(go.Scattermapbox(
         lambda row: (
             f"          <b>{row['TYPE']}</b><br>"
             f"Station: {row['STATIONS']}<br>"
-            f"Rainfall: {'DATA NOT AVAILABLE' if pd.isna(row['RF']) else f'{row['RF']} mm'}"
+            "Rainfall: 'DATA NOT AVAILABLE' if pd.isna(row['RF']) else f'{row['RF'] mm'}"
         ), 
         axis=1
     ),

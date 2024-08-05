@@ -806,7 +806,7 @@ df['LONG'] = pd.to_numeric(df['LONG'], errors='coerce')
 # Define the custom color function
 def color_range(rf_value):
     if pd.isna(rf_value):  # Handle NaN values
-        return 'pink'
+        return 'black'
     elif rf_value % 0.5 != 0:  # if not multiple of 0.5
         return 'white'
     elif rf_value == 0:  # if 0
@@ -854,7 +854,7 @@ for feature in geojson['features']:
             mode='lines',
             line=dict(width=1, color='black'),
             fill='toself',
-            fillcolor='rgba(0,100,80,0.2)',
+            fillcolor='rgb(255, 255, 255)',
             showlegend=False  # Hide the legend
         ))
     elif feature['geometry']['type'] == 'MultiPolygon':
@@ -866,7 +866,7 @@ for feature in geojson['features']:
                 mode='lines',
                 line=dict(width=1, color='black'),
                 fill='toself',
-                fillcolor='rgba(0,100,80,0.2)',
+                fillcolor='rgb(255, 255, 255)',
                 showlegend=False  # Hide the legend
             ))
 
@@ -885,26 +885,20 @@ for _, row in gdf.iterrows():
 df['color'] = df['RF'].apply(color_range)
 
 
-# Add station points with RF values
+
+# Add station points
 fig.add_trace(go.Scattermapbox(
     lon=df['LONG'],
     lat=df['LAT'],
     mode='markers',
     marker=dict(
-        size=10,  # Adjust size based on RF or fixed size
+        size=10,  # Adjust size based on RF if needed
         color=df['color'],
-        symbol='https://github.com/gurinderrrr/weather_analysis/blob/41e2b2ccacb0ddac7de7892bd85b2eb17ddab8d8/aerialway.svg'
     ),
-    text=df.apply(
-        lambda row: (
-            f"          <b>{row['TYPE']}</b><br>"
-            f"Station: {row['STATIONS']}<br>"
-            f"Rainfall: {'DATA NOT AVAILABLE' if pd.isna(row['RF']) else f'{row['RF']} mm'}"
-        ), 
-        axis=1
-    ),
+    text=df.apply(lambda row: f"        <b>{row['TYPE']}</b><br>Station: {row['STATIONS']}<br>Rainfall: {row['RF']} mm", axis=1),
     hoverinfo='text'
 ))
+
 
 
 # Center of the bounding box
