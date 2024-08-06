@@ -47,7 +47,12 @@ aws_mh=["MUMBAI_COLABA","MUMBAI_SANTA_CRUZ", "PALGHAR_AWS400","MATHERAN",
 'AMBEJOGAI','HINGOLI','JALNA','LATUR','NANDED','OSMANABAD',
 'TULGA_KVK','PARBHANI_AMFU','RADHANAGRI_ARS','SANGLI_KVK','SHAHADA_AWS400','BEED_PTO','UDGIR_AWS400','TONDAPUR_AWS400','SAGROLI_KVK']
 
-#print(len(aws_mh))
+# Entries to be removed
+aws_mh_to_remove = {'MURUD','NANDURBAR'}
+
+aws_mh = list(filter(lambda x: x not in aws_mh_to_remove, aws_mh))
+
+print(len(aws_mh))
 
 
 arg_mh=['BANDRA','DAHISAR','JUHU_AIRPORT','MUMBAI AIRPORT',
@@ -74,12 +79,19 @@ arg_mh=['BANDRA','DAHISAR','JUHU_AIRPORT','MUMBAI AIRPORT',
 'SHAHUWADI','AKKALKOT','KARMALA',
 'GANGAPUR','KANNAD','PAITHAN','BHOKARDAN',
 'GHANSANGAVI','PARTUR',
-'PARALIVAIJANATH','KALAMB',
+'PARALIVAIJANATH','KALAMB','TULZAPUR',
 'CHAKUR','NILANGA',
 'PURNA','SONPETH','AUNDHA_NAGNATH',
 'KALAMNURI','BHOKAR']
 
-#print(len(arg_mh))
+# Entries to be removed
+arg_mh_to_remove = {'BHANDARDARA','PAITHAN',
+'PARALIVAIJANATH','SHIRUR','SHIRPUR','AUNDHA_NAGNATH',
+'KALAMNURI','GARGOTI(BHUDARGAD)','SHAHUWADI','CHAKUR','NILANGA','BHOKAR','TALODA','KALAMB','TULZAPUR','PURNA','SONPETH','UMADI','PANCHGANI','PHALTAN','AKKALKOT','KARMALA'}
+
+arg_mh = list(filter(lambda x: x not in arg_mh_to_remove, arg_mh))
+
+print(len(arg_mh))
 
 
 all_mh=['MUMBAI_COLABA','BYCULLA_MUMBAI','MAHALAXMI','MATUNGA_MUMBAI','SION_MUMBAI','MUMBAI_SANTA_CRUZ','TATA POWER CHEMBUR','BANDRA','MUMBAI AIRPORT','VIDYAVIHAR','JUHU_AIRPORT','VIKHROLI','RAM_MANDIR','DAHISAR','KOPARKHAIRANE',
@@ -88,12 +100,22 @@ all_mh=['MUMBAI_COLABA','BYCULLA_MUMBAI','MAHALAXMI','MATUNGA_MUMBAI','SION_MUMB
 'AHMEDNAGAR','RAHURI','SHEVGAON','PALGHAR_AWS400','PALGHAR_KVK','VILHOLI','TRIMBAKESHWAR','NIPHAD','VANI','KALWAN','MALEGAON','DAPOLI','SAVARDE(GOLWANE)',
 'POWARWADI(BHAMBHED)','CHIPLUN','RATNAGIRI','RATNAGIRI_AWS400','MAHABALESHWAR','PANCHGANI','SATARA','PHALTAN','BGRL_KARAD','MOHOL_KVK','KARMALA','SOLAPUR','SANGOLA_MAHAVIDYALAYA',
 'AKKALKOT','KOLHAPUR_AMFU','SHAHUWADI','PANHALA','RADHANAGRI_ARS','GARGOTI(BHUDARGAD)','GANGAPUR','PAITHAN','AURANGABAD_KVK','AURANGABAD','KANNAD','CHALISGAON','CHOPDA','JALGAON','JAMNER','DHULE','SHIRPUR','SHIRALA','UMADI','TASGAON','SANGLI_KVK','AKKALKUWA','NAVAPUR','TALODA','NANDURBAR','NANDURBAR_KVK','SHAHADA_AWS400','JALNA','BHOKARDAN','GHANSANGAVI','PARTUR','VAIBHAVWADI','AWALEGAON','MULDE_AMFU','DEVGAD',
-'VENGURLA','OSMANABAD','KALAMB','TULGA_KVK','AMBEJOGAI','BEED_PTO','PARALIVAIJANATH',
+'VENGURLA','OSMANABAD','KALAMB','TULZAPUR','TULGA_KVK','AMBEJOGAI','BEED_PTO','PARALIVAIJANATH',
 'SHIRUR','CHAKUR','LATUR','NILANGA','UDGIR_AWS400','AUNDHA_NAGNATH','HINGOLI','KALAMNURI','TONDAPUR_AWS400','PARBHANI_AMFU','SONPETH','PURNA','NANDED','SAGROLI_KVK','BHOKAR'
 ]
 
 
+# Entries to be removed
+all_mh_to_remove = {'MURUD','NANDURBAR','BHANDARDARA','PAITHAN',
+'PARALIVAIJANATH','SHIRUR','SHIRPUR','AUNDHA_NAGNATH',
+'KALAMNURI','GARGOTI(BHUDARGAD)','SHAHUWADI','CHAKUR','NILANGA','BHOKAR','TALODA','KALAMB','TULZAPUR','PURNA','SONPETH','UMADI','PANCHGANI','PHALTAN','AKKALKOT','KARMALA'}
+
+all_mh = list(filter(lambda x: x not in all_mh_to_remove, all_mh))
+
+
 print(len(all_mh))
+
+
 
 print('Checking if the AWS/ARG website is working...')
 
@@ -163,7 +185,7 @@ def map_dist(row):
         'MAHALAXMI':'MUMBAI_CITY',
         'MATUNGA_MUMBAI':'MUMBAI_CITY',
         'SION_MUMBAI':'MUMBAI_CITY',
-        'MUMBAI_SANTACRUZ':'MUMBAI_CITY',
+        'MUMBAI_SANTA_CRUZ':'MUMBAI_CITY',
         'TATA POWER CHEMBUR':'MUMBAI_SUBURBAN',
         'BANDRA':'MUMBAI_SUBURBAN',
         'MUMBAI AIRPORT':'MUMBAI_SUBURBAN',
@@ -180,7 +202,6 @@ def map_dist(row):
         'IIG_MO_ALIBAG':'RAIGAD',
         'MATHERAN':'RAIGAD',
         'BHIRA':'RAIGAD',
-        'MURUD':'RAIGAD',
         'POLADPUR':'RAIGAD',
         'INS_SHIVAJI_LONAVALA':'PUNE',
         'TALEGAON':'PUNE',
@@ -282,6 +303,7 @@ def map_dist(row):
         'VENGURLA':'SIDHUDURG',
         'OSMANABAD':'OSMANABAD',
         'KALAMB':'OSMANABAD',
+        'TULZAPUR':'OSMANABAD',
         'TULGA_KVK':'OSMANABAD',
         'AMBEJOGAI':'BEED',
         'BEED_PTO':'BEED',
@@ -302,12 +324,24 @@ def map_dist(row):
         'SAGROLI_KVK':'NANDED',
         'BHOKAR':'NANDED',
     }
+    # Entries to be removed
+    station_to_district_to_remove = {'MURUD', 'NANDURBAR', 'BHANDARDARA', 'PAITHAN',
+                                     'PARALIVAIJANATH', 'SHIRUR', 'SHIRPUR', 'AUNDHA_NAGNATH',
+                                     'KALAMNURI', 'GARGOTI(BHUDARGAD)', 'SHAHUWADI', 'CHAKUR',
+                                     'NILANGA', 'BHOKAR', 'TALODA', 'KALAMB','TULZAPUR', 'PURNA', 'SONPETH',
+                                     'UMADI', 'PANCHGANI', 'PHALTAN', 'AKKALKOT', 'KARMALA'}
 
+    # Create a new dictionary excluding the unwanted entries
+    filtered_station_to_district = {k: v for k, v in station_to_district.items() if k not in station_to_district_to_remove}
+
+    # Check if the station is in the filtered dictionary
     station = row['STATIONS']
-    if station in station_to_district:
-        return station_to_district[station]
+    if station in filtered_station_to_district:
+        return filtered_station_to_district[station]
     else:
-        return ''
+        return ''  # Or some other default value if needed
+    
+      
 
 
 
@@ -319,7 +353,7 @@ def map_type(row):
 'MAHALAXMI':'ARG',
 'MATUNGA_MUMBAI':'ARG',
 'SION_MUMBAI':'ARG',
-'MUMBAI_SANTACRUZ':'AWS',
+'MUMBAI_SANTA_CRUZ':'AWS',
 'TATA POWER CHEMBUR':'ARG',
 'BANDRA':'ARG',
 'MUMBAI AIRPORT':'ARG',
@@ -438,6 +472,7 @@ def map_type(row):
 'VENGURLA':'ARG',
 'OSMANABAD':'AWS',
 'KALAMB':'UR',
+'TULZAPUR':'UR',
 'TULGA_KVK':'AWS',
 'AMBEJOGAI':'AWS',
 'BEED_PTO':'AWS',
@@ -461,11 +496,22 @@ def map_type(row):
     }
 
 
+    # Entries to be removed
+    station_to_type_to_remove = {'MURUD', 'NANDURBAR', 'BHANDARDARA', 'PAITHAN',
+                                     'PARALIVAIJANATH', 'SHIRUR', 'SHIRPUR', 'AUNDHA_NAGNATH',
+                                     'KALAMNURI', 'GARGOTI(BHUDARGAD)', 'SHAHUWADI', 'CHAKUR',
+                                     'NILANGA', 'BHOKAR', 'TALODA', 'KALAMB','TULZAPUR', 'PURNA', 'SONPETH',
+                                     'UMADI', 'PANCHGANI', 'PHALTAN', 'AKKALKOT', 'KARMALA'}
+
+    # Create a new dictionary excluding the unwanted entries
+    filtered_station_to_type = {k: v for k, v in station_to_type.items() if k not in station_to_type_to_remove}
+
+    # Check if the station is in the filtered dictionary
     station = row['STATIONS']
-    if station in station_to_type:
-        return station_to_type[station]
+    if station in filtered_station_to_type:
+        return filtered_station_to_type[station]
     else:
-        return ''
+        return ''  # Or some other default value if needed
 
 
 
@@ -595,6 +641,7 @@ def map_lat(row):
 'VENGURLA':'15.861483',
 'OSMANABAD':'18.18536',
 'KALAMB':'18.57',
+'TULZAPUR':'18.012310',
 'TULGA_KVK':'18.01231',
 'AMBEJOGAI':'18.72419',
 'BEED_PTO':'18.990814',
@@ -619,11 +666,22 @@ def map_lat(row):
     }
 
 
+    # Entries to be removed
+    station_to_lat_to_remove = {'MURUD', 'NANDURBAR', 'BHANDARDARA', 'PAITHAN',
+                                     'PARALIVAIJANATH', 'SHIRUR', 'SHIRPUR', 'AUNDHA_NAGNATH',
+                                     'KALAMNURI', 'GARGOTI(BHUDARGAD)', 'SHAHUWADI', 'CHAKUR',
+                                     'NILANGA', 'BHOKAR', 'TALODA', 'KALAMB','TULZAPUR', 'PURNA', 'SONPETH',
+                                     'UMADI', 'PANCHGANI', 'PHALTAN', 'AKKALKOT', 'KARMALA'}
+
+    # Create a new dictionary excluding the unwanted entries
+    filtered_station_to_lat = {k: v for k, v in station_to_lat.items() if k not in station_to_lat_to_remove}
+
+    # Check if the station is in the filtered dictionary
     station = row['STATIONS']
-    if station in station_to_lat:
-        return station_to_lat[station]
+    if station in filtered_station_to_lat:
+        return filtered_station_to_lat[station]
     else:
-        return ''
+        return ''  # Or some other default value if needed
 
 
 def map_long(row):
@@ -752,6 +810,7 @@ def map_long(row):
 'VENGURLA':'73.651428',
 'OSMANABAD':'76.03561',
 'KALAMB':'76.01',
+'TULZAPUR':'76.080580',
 'TULGA_KVK':'76.08058',
 'AMBEJOGAI':'76.36489',
 'BEED_PTO':'75.748339',
@@ -776,11 +835,22 @@ def map_long(row):
     }
 
 
+    # Entries to be removed
+    station_to_long_to_remove = {'MURUD', 'NANDURBAR', 'BHANDARDARA', 'PAITHAN',
+                                     'PARALIVAIJANATH', 'SHIRUR', 'SHIRPUR', 'AUNDHA_NAGNATH',
+                                     'KALAMNURI', 'GARGOTI(BHUDARGAD)', 'SHAHUWADI', 'CHAKUR',
+                                     'NILANGA', 'BHOKAR', 'TALODA', 'KALAMB','TULZAPUR', 'PURNA', 'SONPETH',
+                                     'UMADI', 'PANCHGANI', 'PHALTAN', 'AKKALKOT', 'KARMALA'}
+
+    # Create a new dictionary excluding the unwanted entries
+    filtered_station_to_long = {k: v for k, v in station_to_long.items() if k not in station_to_long_to_remove}
+
+    # Check if the station is in the filtered dictionary
     station = row['STATIONS']
-    if station in station_to_long:
-        return station_to_long[station]
+    if station in filtered_station_to_long:
+        return filtered_station_to_long[station]
     else:
-        return ''
+        return ''  # Or some other default value if needed
 
 
 
@@ -801,6 +871,7 @@ df['LONG'] = pd.to_numeric(df['LONG'], errors='coerce')
 
 #print(df)
 #print(df.info())
+df.to_excel('C:\\Users\\hp\\Desktop\\gurinder\\python test\\removed.xlsx')
 
 
 # Define the custom color function
@@ -808,7 +879,7 @@ def color_range(rf_value):
     if pd.isna(rf_value):  # Handle NaN values
         return 'black'
     elif rf_value % 0.5 != 0:  # if not multiple of 0.5
-        return 'white'
+        return 'pink'
     elif rf_value == 0:  # if 0
         return 'silver'
     elif 0 < rf_value <= 2.5:  # vlr
@@ -895,9 +966,37 @@ fig.add_trace(go.Scattermapbox(
         size=10,  # Adjust size based on RF if needed
         color=df['color'],
     ),
-    text=df.apply(lambda row: f"        <b>{row['TYPE']}</b><br>Station: {row['STATIONS']}<br>Rainfall: {row['RF']} mm", axis=1),
-    hoverinfo='text'
+    text=df.apply(lambda row: f"        <b>{row['TYPE']}</b><br>Station: {row['STATIONS']}<br>Rainfall: {'DATA NOT AVAILABLE' if pd.isna(row['RF']) else f'{row['RF']} mm'}", axis=1),
+    hoverinfo='text',
+    showlegend=False  # Ensure station points are not in the legend
 ))
+
+
+# Add dummy traces for the legend
+legend_colors = {
+    'Data Not Available': 'black',
+    'Not Multiple of 0.5': 'pink',
+    '0 mm': 'silver',
+    '0 < RF ≤ 2.5 mm': '#98FB98',
+    '2.6 ≤ RF ≤ 15.5 mm': '#7FFF00',
+    '15.6 ≤ RF ≤ 64.5 mm': '#228B22',
+    '64.6 ≤ RF ≤ 115.5 mm': '#FFFF00',
+    '115.6 ≤ RF ≤ 204.5 mm': '#FF8C00',
+    'RF > 204.5 mm': '#FF0000'
+}
+
+for label, color in legend_colors.items():
+    fig.add_trace(go.Scattermapbox(
+        lon=[None],  # Dummy data
+        lat=[None],  # Dummy data
+        mode='markers',
+        marker=dict(
+            size=10,
+            color=color
+        ),
+        showlegend=True,
+        name=label
+    ))
 
 
 
