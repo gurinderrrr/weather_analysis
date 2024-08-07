@@ -18,7 +18,7 @@ print('Creating required date and time')
 t_day = date.today()
 d1 = t_day.strftime("%Y-%m-%d")
 d1_2 = t_day.strftime("%d-%m-%Y")
-y_day=t_day-timedelta(days=1)
+y_day=t_day-timedelta(days=3)
 d0=y_day.strftime("%Y-%m-%d")
 d0_2 = y_day.strftime("%d-%m-%Y")
 
@@ -121,8 +121,8 @@ print('Checking if the AWS/ARG website is working...')
 
 try:
     #Collect today's data (adjust your URLs accordingly)
-    today_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=AWSAGRO&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e={d0}&f={d0}&g=03&h=00')[0]
-    arg_today_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=ARG&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e={d0}&f={d0}&g=03&h=00')[0]
+    today_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=AWSAGRO&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e={d1}&f={d1}&g=03&h=00')[0]
+    arg_today_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=ARG&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e={d1}&f={d1}&g=03&h=00')[0]
 
     print('Website working.')
 
@@ -873,55 +873,51 @@ df['LONG'] = pd.to_numeric(df['LONG'], errors='coerce')
 #print(df.info())
 df.to_excel('C:\\Users\\hp\\Desktop\\gurinder\\python test\\removed.xlsx')
 
-
 # Define the custom color function
 def color_range(rf_value):
     if pd.isna(rf_value):  # Handle NaN values
         return 'black'
     elif rf_value % 0.5 != 0:  # if not multiple of 0.5
-        return '#FF00FF'
+        return 'pink'
     elif rf_value == 0:  # if 0
         return 'silver'
     elif 0 < rf_value < 1:  # vlr
         return '#98FB98'
     elif 1 <= rf_value <= 2.4:  # lr
-        return '#ADFF2F' #Light Green
+        return '#ADFF2F'  # Light Green
     elif 2.5 <= rf_value <= 15.5:  # mr
-        return '#00FF00' #Green
+        return '#00FF00'  # Green
     elif 15.6 <= rf_value <= 64.4:  # hr
-        return '#00FFFF' #Cyan
+        return '#00FFFF'  # Cyan
     elif 64.5 <= rf_value <= 115.5:  # vhr
-        return '#FFFF00' #Yellow
+        return '#FFFF00'  # Yellow
     elif 115.6 <= rf_value <= 204.4:  # vhr
-        return '#FFA500' #Orange
+        return '#FFA500'  # Orange
     elif rf_value > 204.4:  # ehr
-        return '#FF0000' #Red
+        return '#FF0000'  # Red
     else:
         return '#00008B'
-    
 
 # Define the custom opacity function
 def opacity_range(rf_value):
     if pd.isna(rf_value):  # Handle NaN values
-        return 1  # Set opacity for NaN values
+        return 0.5  # Set opacity for NaN values
     else:
         return 1  # Full opacity for all other values
 
-
+# Load shapefile
 shapefile_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\maharashtra district excluding vidarbha.shp'
 gdf = gpd.read_file(shapefile_path)
 
 # Convert the GeoDataFrame to GeoJSON format
 geojson = json.loads(gdf.to_json())
 
-
 # Calculate the centroid of each district polygon
 gdf['centroid'] = gdf.geometry.centroid
 gdf['centroid_lon'] = gdf.centroid.x
 gdf['centroid_lat'] = gdf.centroid.y
 
-
-# Plot using Plotly Graph Objects
+# Create the figure
 fig = go.Figure()
 
 # Add shapefile boundaries
@@ -962,12 +958,10 @@ for _, row in gdf.iterrows():
         textfont=dict(size=10, color='black')  # Adjust text size and color as needed
     ))
 
-# Apply custom color function to the dataframe
+# Assume df is your dataframe with station data
+# Apply custom color and opacity functions to the dataframe
 df['color'] = df['RF'].apply(color_range)
-# Apply the custom opacity function to the dataframe
 df['opacity'] = df['RF'].apply(opacity_range)
-
-
 
 def generate_hover_text(row):
     station_type = row['TYPE']
@@ -977,43 +971,48 @@ def generate_hover_text(row):
 
 df['hover_text'] = df.apply(generate_hover_text, axis=1)
 
+# Add markers for all values with conditional logic for NaN values
+nan_mask = df['RF'].isna()
+
 fig.add_trace(go.Scattermapbox(
-    lon=df['LONG'],
-    lat=df['LAT'],
+    lon=df['LONG'][~nan_mask],
+    lat=df['LAT'][~nan_mask],
     mode='markers',
     marker=dict(
         size=10,  # Adjust size of markers
-        color=df['color'],  # Color of markers
-        opacity=df['opacity'],  # Opacity of markers
+        color=df['color'][~nan_mask],
+        opacity=df['opacity'][~nan_mask]
     ),
-    text=df['hover_text'],
     hoverinfo='text',
+    hovertext=df['hover_text'][~nan_mask],
     showlegend=False
 ))
 
-
-
+fig.add_trace(go.Scattermapbox(
+    lon=df['LONG'][nan_mask],
+    lat=df['LAT'][nan_mask],
+    mode='text',
+    text='x',
+    textposition='middle center',
+    textfont=dict(size=20, color='red'),
+    hoverinfo='text',
+    hovertext=df['hover_text'][nan_mask],
+    showlegend=False
+))
 
 # Add dummy traces for the legend
 legend_colors = {
+    'Data Not Available': 'black',
+    'Faulty data': 'pink',
+    '0 mm': 'silver',
     '0 < RF < 1': '#98FB98',
     '1 <= RF <= 2.4': '#ADFF2F',
-    '2.5 <= RF <= 15.5:': '#00FF00',
-    '15.6 <= RF <= 64.4:': '#00FFFF',
+    '2.5 <= RF <= 15.5': '#00FF00',
+    '15.6 <= RF <= 64.4': '#00FFFF',
     '64.5 <= RF <= 115.5': '#FFFF00',
-    '115.6 <= RF <= 204.4:': '#FFA500',
-    'RF > 204.5 mm': '#FF0000',
-    'Data Not Available': 'black',
-    'Faulty data': '#FF00FF',
-    '0 mm': 'silver',
+    '115.6 <= RF <= 204.4': '#FFA500',
+    'RF > 204.5 mm': '#FF0000'
 }
-
-
-
-
-
-
-
 
 for label, color in legend_colors.items():
     fig.add_trace(go.Scattermapbox(
@@ -1028,8 +1027,6 @@ for label, color in legend_colors.items():
         name=label
     ))
 
-
-
 # Center of the bounding box
 bounds = gdf.total_bounds
 center_lon = (bounds[0] + bounds[2]) / 2
@@ -1042,17 +1039,14 @@ fig.update_layout(
         center=dict(lat=center_lat, lon=center_lon),
         zoom=5.8  # Adjust the zoom level as needed
     ),
-     margin={"r":0,"t":30,"l":0,"b":0},  # Adjusted top margin to make room for the title
+    margin={"r": 0, "t": 30, "l": 0, "b": 0},  # Adjusted top margin to make room for the title
     title={
         'text': "Custom Map of GeoDataFrame",
-        'y':0.98,  # Adjust title position
-        'x':0.5,
+        'y': 0.98,  # Adjust title position
+        'x': 0.5,
         'xanchor': 'center',
         'yanchor': 'top'
-    }   
-    
-     
-
+    }
 )
 
-fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\plotly awarg test.html')
+fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\plotly_awarg_test.html')
