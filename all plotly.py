@@ -901,7 +901,7 @@ def color_range(rf_value):
 # Define the custom opacity function
 def opacity_range(rf_value):
     if pd.isna(rf_value):  # Handle NaN values
-        return 0.5  # Set opacity for NaN values
+        return 1  # Set opacity for NaN values
     else:
         return 1  # Full opacity for all other values
 
@@ -955,7 +955,7 @@ for _, row in gdf.iterrows():
         mode='text',
         text=row['DISTRICT'],
         showlegend=False,
-        textfont=dict(size=10, color='black')  # Adjust text size and color as needed
+        textfont=dict(size=10, color='black'),  # Adjust text size and color as needed
     ))
 
 # Assume df is your dataframe with station data
@@ -967,7 +967,7 @@ def generate_hover_text(row):
     station_type = row['TYPE']
     station_name = row['STATIONS']
     rainfall = "DATA NOT AVAILABLE" if pd.isna(row['RF']) else f"{row['RF']} mm"
-    return f"<b>{station_type}</b><br>Station: {station_name}<br>Rainfall: {rainfall}"
+    return f"       <b>{station_type}</b><br><br>Station: {station_name}<br>Rainfall: {rainfall}"
 
 df['hover_text'] = df.apply(generate_hover_text, axis=1)
 
@@ -994,7 +994,7 @@ fig.add_trace(go.Scattermapbox(
     mode='text',
     text='x',
     textposition='middle center',
-    textfont=dict(size=20, color='red'),
+    textfont=dict(size=10, color='red'),
     hoverinfo='text',
     hovertext=df['hover_text'][nan_mask],
     showlegend=False
@@ -1002,30 +1002,48 @@ fig.add_trace(go.Scattermapbox(
 
 # Add dummy traces for the legend
 legend_colors = {
-    'Data Not Available': 'black',
-    'Faulty data': 'pink',
-    '0 mm': 'silver',
-    '0 < RF < 1': '#98FB98',
     '1 <= RF <= 2.4': '#ADFF2F',
     '2.5 <= RF <= 15.5': '#00FF00',
     '15.6 <= RF <= 64.4': '#00FFFF',
     '64.5 <= RF <= 115.5': '#FFFF00',
     '115.6 <= RF <= 204.4': '#FFA500',
-    'RF > 204.5 mm': '#FF0000'
+    'RF > 204.5 mm': '#FF0000',
+    'Faulty data': 'pink',
+    '0 mm': 'silver',
+    '0 < RF < 1': '#98FB98',
+    'Data Not Available':'#ffffff'
+
+    
 }
 
+# Create a dummy trace for "Data Not Available" with a red cross
+#fig.add_trace(go.Scattermapbox(
+   # lon=[None],  # Dummy data
+   # lat=[None],  # Dummy data
+   # mode='markers',
+   # marker=dict(
+    #    size=10,
+    #    symbol='cross',  # Use 'cross' for the marker shape
+    #    color='red'
+  #  ),
+   # showlegend=True,
+   # name='Data Not Available'
+#))
+
+# Add dummy traces for other legend items
 for label, color in legend_colors.items():
     fig.add_trace(go.Scattermapbox(
         lon=[None],  # Dummy data
         lat=[None],  # Dummy data
         mode='markers',
         marker=dict(
-            size=30,
+            size=10,
             color=color
         ),
         showlegend=True,
         name=label
     ))
+
 
 # Center of the bounding box
 bounds = gdf.total_bounds
@@ -1047,6 +1065,20 @@ fig.update_layout(
         'xanchor': 'center',
         'yanchor': 'top'
     }
+)
+
+
+# Add a red "x" text annotation near the legends
+fig.add_annotation(
+    x=1.045,  # X coordinate in normalized units (relative to the plot)
+    y=0.66,  # Y coordinate in normalized units (relative to the plot)
+    xref="paper",
+    yref="paper",
+    text="x",
+    showarrow=False,
+    font=dict(size=20, color="red"),
+    align="center",
+    bgcolor="rgba(255,255,255,0.5)"
 )
 
 fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\plotly_awarg_test.html')
