@@ -1030,7 +1030,7 @@ def generate_rf_hover_text(row):
     station_type = row['TYPE']
     station_name = row['STATIONS']
     rainfall = "DATA NOT AVAILABLE" if pd.isna(row['RF']) else f"{row['RF']} mm"
-    return f"<b>{station_type}</b><br>Station: {station_name}<br>Rainfall: {rainfall}"
+    return f"           <b>{station_type}</b><br>Station: {station_name}<br>Rainfall: {rainfall}"
 
 df['rf_hover_text'] = df.apply(generate_rf_hover_text, axis=1)
 
@@ -1116,7 +1116,7 @@ fig.update_layout(
     mapbox=dict(
         style='white-bg',
         center=dict(lat=center_lat, lon=center_lon),
-        zoom=6  # Adjust the zoom level to an optimal value
+        zoom=6.15  # Adjust the zoom level to an optimal value
     ),
     margin={"r": 0, "t": 30, "l": 0, "b": 0},
     title={
@@ -1275,7 +1275,7 @@ def generate_temp_hover_text(row):
     station_type = row['TYPE']
     station_name = row['STATIONS']
     mint = "DATA NOT AVAILABLE" if pd.isna(row['MIN T']) else f"{row['MIN T']} mm"
-    return f"<b>{station_type}</b><br>Station: {station_name}<br>MIN T: {mint}"
+    return f"           <b>{station_type}</b><br>Station: {station_name}<br>MIN T: {mint}"
 
 df['temp_hover_text'] = df.apply(generate_temp_hover_text, axis=1)
 
@@ -1375,9 +1375,9 @@ fig.update_layout(
 
 # Add the text "x" as an annotation
 fig.add_annotation(
-    x=1.035,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
-    y=0.815,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
-    text="x",  # Text to display
+    x=1.036,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
+    y=0.843,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
+    text="O",  # Text to display
     showarrow=False,  # Hide the arrow
     font=dict(size=15, color="red"),  # Customize the text font and color
     xref="paper",  # x reference to the figure, can also be 'x' for data coordinates
@@ -1389,9 +1389,9 @@ fig.add_annotation(
 
 # Add the text "x" as an annotation
 fig.add_annotation(
-    x=1.035,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
-    y=0.788,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
-    text="x",  # Text to display
+    x=1.036,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
+    y=0.814,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
+    text="X",  # Text to display
     showarrow=False,  # Hide the arrow
     font=dict(size=15, color="red"),  # Customize the text font and color
     xref="paper",  # x reference to the figure, can also be 'x' for data coordinates
@@ -1402,3 +1402,239 @@ fig.add_annotation(
 
 # Save the figure to an HTML file
 fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\MIN T PLOT.html')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Define the custom color function
+def temp_range(temp_value):
+    if 0.1 <= temp_value <= 10.0:
+        return '#00FF00'
+    elif 10.1 <= temp_value <= 20.0:
+        return '#00FFFF'
+    elif 20.1 <= temp_value <= 30.0:
+        return '#FFFF00'
+    elif 30.1 <= temp_value <= 40.0:
+        return '#FFA500'
+    elif temp_value >= 40.1:
+        return '#FF0000'
+    else:
+        return '#00008B'
+
+# Define the custom opacity function
+def temp_opacity_range(temp_value):
+    if pd.isna(temp_value):
+        return 1
+    else:
+        return 1
+
+# Load shapefile
+#shapefile_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\maharashtra district excluding vidarbha.shp'
+#gdf = gpd.read_file(shapefile_path)
+
+# Convert the GeoDataFrame to GeoJSON format
+#geojson = json.loads(gdf.to_json())
+
+# Calculate the centroid of each district polygon
+#gdf['centroid'] = gdf.geometry.centroid
+#gdf['centroid_lon'] = gdf.centroid.x
+#gdf['centroid_lat'] = gdf.centroid.y
+
+# Create the figure
+fig = go.Figure()
+
+# Add shapefile boundaries
+for feature in geojson['features']:
+    coords = feature['geometry']['coordinates']
+    if feature['geometry']['type'] == 'Polygon':
+        lon, lat = zip(*coords[0])
+        fig.add_trace(go.Scattermapbox(
+            lon=lon,
+            lat=lat,
+            mode='lines',
+            line=dict(width=1, color='black'),
+            fill='toself',
+            fillcolor='rgba(255, 255, 255, 0.3)',
+            showlegend=False
+        ))
+    elif feature['geometry']['type'] == 'MultiPolygon':
+        for polygon in coords:
+            lon, lat = zip(*polygon[0])
+            fig.add_trace(go.Scattermapbox(
+                lon=lon,
+                lat=lat,
+                mode='lines',
+                line=dict(width=1, color='black'),
+                fill='toself',
+                fillcolor='rgba(255, 255, 255, 0.3)',
+                showlegend=False
+            ))
+
+# Add district names as text annotations with better visibility
+for _, row in gdf.iterrows():
+    fig.add_trace(go.Scattermapbox(
+        lon=[row['centroid_lon']],
+        lat=[row['centroid_lat']],
+        mode='text',
+        text=row['DISTRICT'],
+        showlegend=False,
+        textfont=dict(size=12, color='black'),  # Adjust text size and color as needed
+    ))
+
+# Apply custom color and opacity functions to the dataframe
+df['color'] = df['MAX T'].apply(temp_range)
+df['opacity'] = df['MAX T'].apply(temp_opacity_range)
+
+def generate_temp_hover_text(row):
+    station_type = row['TYPE']
+    station_name = row['STATIONS']
+    mint = "DATA NOT AVAILABLE" if pd.isna(row['MAX T']) else f"{row['MAX T']} mm"
+    return f"           <b>{station_type}</b><br>Station: {station_name}<br>MIN T: {mint}"
+
+df['temp_hover_text'] = df.apply(generate_temp_hover_text, axis=1)
+
+# Mask for values that are NaN
+nan_mask = pd.isna(df['MAX T'])
+
+# Mask for values that are not multiples of 0.5
+faulty_data_mask = (df['MAX T'] <0) & ~nan_mask
+
+# Add markers for valid rainfall values (neither NaN nor faulty)
+valid_mask = ~nan_mask & ~faulty_data_mask
+fig.add_trace(go.Scattermapbox(
+    lon=df['LONG'][valid_mask],
+    lat=df['LAT'][valid_mask],
+    mode='markers',
+    marker=dict(
+        size=10,
+        color=df['color'][valid_mask],
+        opacity=df['opacity'][valid_mask]
+    ),
+    hoverinfo='text',
+    hovertext=df['temp_hover_text'][valid_mask],
+    showlegend=False
+))
+
+# Add text 'x' for faulty data (not multiples of 0.5)
+fig.add_trace(go.Scattermapbox(
+    lon=df['LONG'][faulty_data_mask],
+    lat=df['LAT'][faulty_data_mask],
+    mode='text',
+    text='X',
+    textposition='middle center',
+    textfont=dict(size=15, color='red'),
+    hoverinfo='text',
+    hovertext=df['temp_hover_text'][faulty_data_mask],
+    showlegend=False
+))
+
+# Add text 'x' for NaN values with black color
+fig.add_trace(go.Scattermapbox(
+    lon=df['LONG'][nan_mask],
+    lat=df['LAT'][nan_mask],
+    mode='text',
+    text='O',
+    textposition='middle center',
+    textfont=dict(size=15, color='red'),
+    hoverinfo='text',
+    hovertext=df['temp_hover_text'][nan_mask],
+    showlegend=False
+))
+
+# Add dummy traces for the legend
+legend_colors = {
+    '<b>0.1 <= temp_value <= 10.0</b>': '#00FF00',
+    '<b>10.1 <= temp_value <= 20.0</b>': '#00FFFF',
+    '<b>20.1 <= temp_value <= 30.0</b>': '#FFFF00',
+    '<b>30.1 <= temp_value <= 40.0</b>': '#FFA500',
+    '<b>temp_value >= 40.1</b>': '#FF0000',
+    '<b>Data Not Available</b>': '#FFFFFF',
+    '<b>Faulty data</b>': '#FFFFFF',
+}
+
+
+
+for label, color in legend_colors.items():
+    fig.add_trace(go.Scattermapbox(
+        lon=[None],
+        lat=[None],
+        mode='markers',
+        marker=dict(size=30, color=color),
+        showlegend=True,
+        name=label
+    ))
+
+# Center of the bounding box
+bounds = gdf.total_bounds
+center_lon = (bounds[0] + bounds[2]) / 2
+center_lat = (bounds[1] + bounds[3]) / 2
+
+# Update layout for the map
+fig.update_layout(
+    mapbox=dict(
+        style='white-bg',
+        center=dict(lat=center_lat, lon=center_lon),
+        zoom=6  # Adjust the zoom level to an optimal value
+    ),
+    margin={"r": 0, "t": 30, "l": 0, "b": 0},
+    title={
+        'text': "<b>MAX T Data for Maharashtra (excluding Vidarbha): "f"{d0_2} 3UTC to {d1_2} 3UTC</b>",
+        'y': 0.98,
+        'x': 0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'
+    }
+)
+
+
+# Add the text "x" as an annotation
+fig.add_annotation(
+    x=1.036,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
+    y=0.843,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
+    text="O",  # Text to display
+    showarrow=False,  # Hide the arrow
+    font=dict(size=15, color="red"),  # Customize the text font and color
+    xref="paper",  # x reference to the figure, can also be 'x' for data coordinates
+    yref="paper",  # y reference to the figure, can also be 'y' for data coordinates
+    xanchor="center",  # Horizontal alignment of the text
+    yanchor="middle"   # Vertical alignment of the text
+)
+
+
+# Add the text "x" as an annotation
+fig.add_annotation(
+    x=1.036,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
+    y=0.814,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
+    text="X",  # Text to display
+    showarrow=False,  # Hide the arrow
+    font=dict(size=15, color="red"),  # Customize the text font and color
+    xref="paper",  # x reference to the figure, can also be 'x' for data coordinates
+    yref="paper",  # y reference to the figure, can also be 'y' for data coordinates
+    xanchor="center",  # Horizontal alignment of the text
+    yanchor="middle"   # Vertical alignment of the text
+)
+
+# Save the figure to an HTML file
+fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\MAX T PLOT.html')
