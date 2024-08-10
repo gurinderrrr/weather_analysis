@@ -93,6 +93,35 @@ arg_mh = list(filter(lambda x: x not in arg_mh_to_remove, arg_mh))
 
 arg_temp_not_installed={'SHEVGAON','SHRIGONDA','GANGAPUR','KANNAD','CHALISGAON','JAMNER','GHANSANGAVI','PARTUR','TRIMBAKESHWAR','NIPHAD','VANI','POWARWADI(BHAMBHED)','TASGAON','VAIBHAVWADI','VENGURLA'}
 
+no_slp={'PALGHAR_KVK','NANDURBAR_KVK','MOHOL_KVK','AURANGABAD_KVK','TULGA_KVK','BANDRA','DAHISAR','JUHU_AIRPORT','MUMBAI AIRPORT',
+'RAM_MANDIR','TATA POWER CHEMBUR','VIDYAVIHAR',
+'VIKHROLI','BYCULLA_MUMBAI',
+'MAHALAXMI','MATUNGA_MUMBAI','SION_MUMBAI',
+'BHAYANDER','KOPARKHAIRANE','MIRA_ROAD',
+'BHIRA','POLADPUR','IIGHQ_NEWPANVEL',
+'SAVARDE(GOLWANE)','CHIPLUN',
+'POWARWADI(BHAMBHED)','AWALEGAON',
+'VAIBHAVWADI','VENGURLA','AKKALKUWA',
+'TALODA','SHIRPUR','SHIRUR',
+'CHALISGAON','JAMNER','NIPHAD','TRIMBAKESHWAR',
+'VANI','BHANDARDARA','PARNER','SHEVGAON',
+'SHRIGONDA','BALLALWADI_JUNNAR','BLINDSCHOOL_KP_PUNE',
+'CHINCHWAD_PUNE','GIRIVAN','GUDHE_BHOR',
+'KHADAKWADI_AMBEGAON','LAVALE','MAGARPATTA_PUNE',
+'MALIN_AMBEGAON','MTI_PASHAN_PUNE','NDA_PUNE','NES_LAKADI_INDAPUR',
+'PABAL_SHIRUR','RJSPMCOP_DUDULGAON',
+'SHIVAJINAGAR_PUNE','TALEGAON_DHAMDHERE',
+'VETALE_KHED','WADGAONSHERI_PUNE','WALHE_PURANDAR',
+'PANCHGANI','PHALTAN','SHIRALA','TASGAON',
+'UMADI','GARGOTI(BHUDARGAD)','PANHALA',
+'SHAHUWADI','AKKALKOT','KARMALA',
+'GANGAPUR','KANNAD','PAITHAN','BHOKARDAN',
+'GHANSANGAVI','PARTUR',
+'PARALIVAIJANATH','KALAMB','TULZAPUR',
+'CHAKUR','NILANGA',
+'PURNA','SONPETH','AUNDHA_NAGNATH',
+'KALAMNURI','BHOKAR'}
+
 print(len(arg_mh))
 
 
@@ -1066,18 +1095,6 @@ fig.add_trace(go.Scattermapbox(
     showlegend=False
 ))
 
-# Add text 'x' for faulty data (not multiples of 0.5)
-fig.add_trace(go.Scattermapbox(
-    lon=df['LONG'][faulty_data_mask],
-    lat=df['LAT'][faulty_data_mask],
-    mode='text',
-    text='X',
-    textposition='middle center',
-    textfont=dict(size=15, color='red'),
-    hoverinfo='text',
-    hovertext=df['rf_hover_text'][faulty_data_mask],
-    showlegend=False
-))
 
 # Add text 'O' for NaN values with black color
 fig.add_trace(go.Scattermapbox(
@@ -1089,6 +1106,20 @@ fig.add_trace(go.Scattermapbox(
     textfont=dict(size=15, color='red'),
     hoverinfo='text',
     hovertext=df['rf_hover_text'][nan_mask],
+    showlegend=False
+))
+
+
+# Add text 'x' for faulty data (not multiples of 0.5)
+fig.add_trace(go.Scattermapbox(
+    lon=df['LONG'][faulty_data_mask],
+    lat=df['LAT'][faulty_data_mask],
+    mode='text',
+    text='X',
+    textposition='middle center',
+    textfont=dict(size=15, color='red'),
+    hoverinfo='text',
+    hovertext=df['rf_hover_text'][faulty_data_mask],
     showlegend=False
 ))
 
@@ -1168,7 +1199,6 @@ fig.add_annotation(
 
 # Save the figure to an HTML file
 fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\RF PLOT.html')
-
 
 
 
@@ -1315,18 +1345,7 @@ fig.add_trace(go.Scattermapbox(
     showlegend=False
 ))
 
-# Add text 'x' for faulty data (not multiples of 0.5)
-fig.add_trace(go.Scattermapbox(
-    lon=df['LONG'][faulty_data_mask],
-    lat=df['LAT'][faulty_data_mask],
-    mode='text',
-    text='X',
-    textposition='middle center',
-    textfont=dict(size=15, color='red'),
-    hoverinfo='text',
-    hovertext=df['temp_hover_text'][faulty_data_mask],
-    showlegend=False
-))
+
 
 # Add text 'x' for NaN values with black color
 fig.add_trace(go.Scattermapbox(
@@ -1338,6 +1357,20 @@ fig.add_trace(go.Scattermapbox(
     textfont=dict(size=15, color='red'),
     hoverinfo='text',
     hovertext=df['temp_hover_text'][nan_mask][~excluded_stations_mask],
+    showlegend=False
+))
+
+
+# Add text 'x' for faulty data (not multiples of 0.5)
+fig.add_trace(go.Scattermapbox(
+    lon=df['LONG'][faulty_data_mask],
+    lat=df['LAT'][faulty_data_mask],
+    mode='text',
+    text='X',
+    textposition='middle center',
+    textfont=dict(size=15, color='red'),
+    hoverinfo='text',
+    hovertext=df['temp_hover_text'][faulty_data_mask],
     showlegend=False
 ))
 
@@ -1419,7 +1452,7 @@ fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\MIN T PLOT.html')
 
 
 
-exit()
+
 
 
 
@@ -1551,6 +1584,21 @@ fig.add_trace(go.Scattermapbox(
     showlegend=False
 ))
 
+
+
+# Add text 'x' for NaN values with black color
+fig.add_trace(go.Scattermapbox(
+    lon=df['LONG'][nan_mask][~excluded_stations_mask],
+    lat=df['LAT'][nan_mask][~excluded_stations_mask],
+    mode='text',
+    text='O',
+    textposition='middle center',
+    textfont=dict(size=15, color='red'),
+    hoverinfo='text',
+    hovertext=df['temp_hover_text'][nan_mask][~excluded_stations_mask],
+    showlegend=False
+))
+
 # Add text 'x' for faulty data (not multiples of 0.5)
 fig.add_trace(go.Scattermapbox(
     lon=df['LONG'][faulty_data_mask],
@@ -1561,19 +1609,6 @@ fig.add_trace(go.Scattermapbox(
     textfont=dict(size=15, color='red'),
     hoverinfo='text',
     hovertext=df['temp_hover_text'][faulty_data_mask],
-    showlegend=False
-))
-
-# Add text 'x' for NaN values with black color
-fig.add_trace(go.Scattermapbox(
-    lon=df['LONG'][nan_mask],
-    lat=df['LAT'][nan_mask],
-    mode='text',
-    text='O',
-    textposition='middle center',
-    textfont=dict(size=15, color='red'),
-    hoverinfo='text',
-    hovertext=df['temp_hover_text'][nan_mask],
     showlegend=False
 ))
 
@@ -1689,7 +1724,6 @@ fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\MAX T PLOT.html')
 
 
 
-
 # Define the custom color function
 def slp_range(slp_value):
     if 500.1 <= slp_value <= 800.0:
@@ -1708,7 +1742,7 @@ def slp_range(slp_value):
         return '#00008B'
 
 # Define the custom opacity function
-def temp_opacity_range(temp_value):
+def slp_opacity_range(temp_value):
     if pd.isna(temp_value):
         return 1
     else:
@@ -1768,8 +1802,8 @@ for _, row in gdf.iterrows():
     ))
 
 # Apply custom color and opacity functions to the dataframe
-df['color'] = df['SLP (hPa)'].apply(temp_range)
-df['opacity'] = df['SLP (hPa)'].apply(temp_opacity_range)
+df['color'] = df['SLP (hPa)'].apply(slp_range)
+df['opacity'] = df['SLP (hPa)'].apply(slp_opacity_range)
 
 def generate_slp_hover_text(row):
     station_type = row['TYPE']
@@ -1782,17 +1816,20 @@ df['slp_hover_text'] = df.apply(generate_slp_hover_text, axis=1)
 # Mask for values that are NaN
 nan_mask = pd.isna(df['SLP (hPa)'])
 
+# Mask for stations that are in all_temp_not_installed
+excluded_slp_stations_mask = df['STATIONS'].isin(no_slp)
+
 fig.add_trace(go.Scattermapbox(
-    lon=df['LONG'][~nan_mask],
-    lat=df['LAT'][~nan_mask],
+    lon=df['LONG'][~nan_mask][~excluded_slp_stations_mask],
+    lat=df['LAT'][~nan_mask][~excluded_slp_stations_mask],
     mode='markers',
     marker=dict(
         size=10,
-        color=df['color'][~nan_mask],
-        opacity=df['opacity'][~nan_mask]
+        color=df['color'][~nan_mask][~excluded_slp_stations_mask],
+        opacity=df['opacity'][~nan_mask][~excluded_slp_stations_mask]
     ),
     hoverinfo='text',
-    hovertext=df['slp_hover_text'][~nan_mask],
+    hovertext=df['slp_hover_text'][~nan_mask][~excluded_slp_stations_mask],
     showlegend=False
 ))
 
@@ -1800,14 +1837,14 @@ fig.add_trace(go.Scattermapbox(
 
 # Add text 'O' for NaN values with black color
 fig.add_trace(go.Scattermapbox(
-    lon=df['LONG'][nan_mask],
-    lat=df['LAT'][nan_mask],
+    lon=df['LONG'][nan_mask][~excluded_slp_stations_mask],
+    lat=df['LAT'][nan_mask][~excluded_slp_stations_mask],
     mode='text',
     text='O',
     textposition='middle center',
     textfont=dict(size=15, color='red'),
     hoverinfo='text',
-    hovertext=df['slp_hover_text'][nan_mask],
+    hovertext=df['slp_hover_text'][nan_mask][~excluded_slp_stations_mask],
     showlegend=False
 ))
 
@@ -1824,22 +1861,6 @@ legend_colors = {
 }
 
 
-# Define the custom color function
-def slp_range(slp_value):
-    if 500.1 <= slp_value <= 800.0:
-        return '#ADFF2F'
-    elif 800.1 <= slp_value <= 900.0:
-        return '#00FF00'
-    elif 900.1 <= slp_value <= 950.0:
-        return '#00FFFF'
-    elif 950.1 <= slp_value <= 1000.0:
-        return '#FFFF00'
-    elif 1000.1 <= slp_value <= 1025.0:
-        return '#FFA500'
-    elif slp_value >= 1025.1:
-        return '#FF0000'
-    else:
-        return '#00008B'
 
 
 
@@ -1878,8 +1899,8 @@ fig.update_layout(
 
 # Add the text "x" as an annotation
 fig.add_annotation(
-    x=1.036,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
-    y=0.843,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
+    x=1.037,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
+    y=0.814,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
     text="O",  # Text to display
     showarrow=False,  # Hide the arrow
     font=dict(size=15, color="red"),  # Customize the text font and color
@@ -1892,8 +1913,8 @@ fig.add_annotation(
 
 # Add the text "x" as an annotation
 fig.add_annotation(
-    x=1.036,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
-    y=0.814,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
+    x=1.037,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
+    y=0.785,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
     text="X",  # Text to display
     showarrow=False,  # Hide the arrow
     font=dict(size=15, color="red"),  # Customize the text font and color
