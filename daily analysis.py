@@ -29,7 +29,7 @@ d1_2 = t_day.strftime("%d-%m-%Y")
 d1_22 = t_day.strftime("%d-%m")
 #print(d1_22)
 
-y_day=t_day-timedelta(days=1)
+y_day=t_day-timedelta(days=7)
 d0=y_day.strftime("%Y-%m-%d")
 d0_2 = y_day.strftime("%d-%m-%Y")
 d0_22 = y_day.strftime("%d-%m")
@@ -37,10 +37,10 @@ d0_22 = y_day.strftime("%d-%m")
 
 
 # Get the path to the OneDrive
-OneDrive_path = os.path.join(os.path.expanduser("~"), "OneDrive")
+analysis_path = os.path.join(os.path.expanduser("~"), "Desktop\\gurinder")
 
 # Define the path to the "daily data" folder
-daily_data_path = os.path.join(OneDrive_path, "daily data")
+daily_data_path = os.path.join(analysis_path, "daily analysis")
 
 # Check if the "daily data" folder exists and create it if not
 if not os.path.exists(daily_data_path):
@@ -173,7 +173,7 @@ combine_tday_mh.drop(mah_drop_today, inplace=True)
 
 
                             #choose columns to include in combine_tday_mh
-combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP DAY MIN. (\'C)','TEMP DAY MAX. (\'C)','TEMP. (\'C)','RH (%)','MSLP (hPa / gpm)','BATTERY (Volts)','GPS']]
+combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP DAY MIN. (\'C)','TEMP DAY MAX. (\'C)','TEMP. (\'C)','RH (%)','MSLP (hPa / gpm)','SLP (hPa)','BATTERY (Volts)','GPS']]
 
 
 
@@ -187,7 +187,9 @@ combine_tday_mh.columns=combine_tday_mh.columns.str.replace('RAIN FALL CUM. SINC
 combine_tday_mh.columns=combine_tday_mh.columns.str.replace('TEMP DAY MIN. (\'C)', 'MIN T',regex=False)
 combine_tday_mh.columns=combine_tday_mh.columns.str.replace('TEMP DAY MAX. (\'C)', 'MAX T',regex=False)
 combine_tday_mh.columns=combine_tday_mh.columns.str.replace('TEMP. (\'C)', 'TEMP',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('SLP (hPa)', 'SLP',regex=False)
 combine_tday_mh.columns=combine_tday_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
+
 
 #print(combine_tday_mh['STATION'].nunique())
 
@@ -203,7 +205,7 @@ del merged
 
 
 df['DATE'] = pd.to_datetime(df['DATE'],format='%Y-%m-%d')
-df['DATE'] = df['DATE'].dt.strftime('%d-%m')
+df['DATE'] = df['DATE'].dt.strftime('%d-%m-%Y')
 
 df['TIME (UTC)'] = pd.to_datetime(df['TIME (UTC)'],format='%H:%M:%S')
 df['TIME (UTC)'] = df['TIME (UTC)'].dt.strftime('%H:%M')
@@ -245,7 +247,10 @@ end_datetime = d1 + ' 03:00'
 frequency = '15min'
 
 #Create a datetime range
-datetime_range = pd.date_range(start=start_datetime, end=end_datetime, freq=frequency).strftime('%d-%m %H:%M')
+datetime_range = pd.date_range(start=start_datetime, end=end_datetime, freq=frequency).strftime('%d-%m-%Y %H:%M')
+
+# Reverse the order
+datetime_range = datetime_range[::-1]
 
 #print(datetime_range)
 
@@ -456,29 +461,176 @@ complete_combined['DISTRICT']=complete_combined.apply(map_dis_to_sta_mh, axis=1)
 
 #complete_combined['DATETIME (UTC)'] = pd.to_datetime(complete_combined['DATETIME (UTC)'])
 
-complete_combined = complete_combined[['DISTRICT', 'STATIONS', 'DATETIME (UTC)', 'RF', 'MIN T', 'MAX T', 'TEMP', 'RH (%)', 'MSLP', 'BATTERY (Volts)', 'GPS']]
+complete_combined = complete_combined[['DISTRICT', 'STATIONS','AWS/ARG', 'DATETIME (UTC)', 'RF', 'MIN T', 'MAX T', 'TEMP', 'RH (%)','SLP','MSLP', 'BATTERY (Volts)', 'GPS']]
 
 #print(complete_combined)
 #print('unique stations in complete_combined: ',complete_combined['STATIONS'].nunique())
 #print('unique datetime in complete_combined: ',complete_combined['DATETIME (UTC)'].nunique())
 
 
-def rf(s, props='background-color:red;color:yellow;font-weight:bold'):
+complete_combined['RF'] = pd.to_numeric(complete_combined['RF'], errors='coerce')
+complete_combined['MIN T'] = pd.to_numeric(complete_combined['MIN T'], errors='coerce')
+complete_combined['MAX T'] = pd.to_numeric(complete_combined['MAX T'], errors='coerce')
+complete_combined['TEMP'] = pd.to_numeric(complete_combined['TEMP'], errors='coerce')
+complete_combined['SLP'] = pd.to_numeric(complete_combined['SLP'], errors='coerce')
+complete_combined['MSLP'] = pd.to_numeric(complete_combined['MSLP'], errors='coerce')
+complete_combined['BATTERY (Volts)'] = pd.to_numeric(complete_combined['BATTERY (Volts)'], errors='coerce')
+
+
+def rf_color_range(rf_value):
+    styles = []
+    for v in rf_value:
+        if pd.isna(v):  # Handle NaN values
+            styles.append('')  # No style for NaN cells
+        elif v % 0.5 != 0:  # if not multiple of 0.5
+            styles.append('background-color: black; color: white; font-weight: bold')
+        elif v == 0:
+            styles.append('background-color: silver')
+        elif 0 < v < 1:
+            styles.append('background-color: #71797E')
+        elif 1 <= v <= 2.4:
+            styles.append('background-color: #ADFF2F')
+        elif 2.5 <= v <= 15.5:
+            styles.append('background-color: #00FF00')
+        elif 15.6 <= v <= 64.4:
+            styles.append('background-color: #00FFFF')
+        elif 64.5 <= v <= 115.5:
+            styles.append('background-color: #FFFF00')
+        elif 115.6 <= v <= 204.4:
+            styles.append('background-color: #FFA500')
+        elif v > 204.4:
+            styles.append('background-color: #FF0000')
+        else:
+            styles.append('background-color: #00008B')
+    return styles
+    
+
+# Define the custom color function
+def temp_range(temp_values):
+    styles = []
+    for v in temp_values:
+        if pd.isna(v):  # Handle NaN values
+            styles.append('')  # No style for NaN cells
+        elif v < 0:  # if negative values
+            styles.append('background-color: black; color: white; font-weight: bold')
+        elif 0.1 <= v <= 10.0:
+            styles.append('background-color: #00FF00')
+        elif 10.1 <= v <= 20.0:
+            styles.append('background-color: #00FFFF')
+        elif 20.1 <= v <= 30.0:
+            styles.append('background-color: #FFFF00')
+        elif 30.1 <= v <= 40.0:
+            styles.append('background-color: #FFA500')
+        elif v >= 40.1:
+            styles.append('background-color: #FF0000')
+        else:
+            styles.append('background-color: #00008B')
+    return styles
+    
+
+
+def rh_range(rh_values):
+    styles = []
+    for v in rh_values:
+        if pd.isna(v):  # Handle NaN values
+            styles.append('')  # No style for NaN cells
+        elif v > 100:  # if values are greater than 100
+            styles.append('background-color: black; color: white; font-weight: bold')
+        elif 1 <= v <= 20:
+            styles.append('background-color: #ADFF2F')
+        elif 21 <= v <= 40:
+            styles.append('background-color: #00FF00')
+        elif 41 <= v <= 60:
+            styles.append('background-color: #00FFFF')
+        elif 61 <= v <= 80:
+            styles.append('background-color: #FFFF00')
+        elif 81 <= v <= 90:
+            styles.append('background-color: #FFA500')
+        elif 91 <= v <= 100:
+            styles.append('background-color: #FF0000')
+        else:
+            styles.append('background-color: #00008B')
+    return styles
+    
+
+    
+
+# Define the custom color function
+def slp_range(slp_values):
+    styles = []
+    previous_value = None  # To keep track of the previous value for the .diff() logic
+
+    for v in slp_values:
+        if pd.isna(v):  # Handle NaN values
+            styles.append('')  # No style for NaN cells
+        elif previous_value is not None and abs(v - previous_value) > 2:  # Check difference from the previous value
+            styles.append('background-color: black; color: white; font-weight: bold')
+        elif 500.1 <= v <= 800.0:
+            styles.append('background-color: #ADFF2F')
+        elif 800.1 <= v <= 900.0:
+            styles.append('background-color: #00FF00')
+        elif 900.1 <= v <= 950.0:
+            styles.append('background-color: #00FFFF')
+        elif 950.1 <= v <= 1000.0:
+            styles.append('background-color: #FFFF00')
+        elif 1000.1 <= v <= 1025.0:
+            styles.append('background-color: #FFA500')
+        elif v >= 1025.1:
+            styles.append('background-color: #FF0000')
+        else:
+            styles.append('background-color: #00008B')
+        
+        previous_value = v  # Update the previous value
+
+    return styles
+    
+
+# Define the custom color function
+def bat_range(bat_values):
+    styles = []
+    for v in bat_values:
+        if pd.isna(v):  # Handle NaN values
+            styles.append('')  # No style for NaN cells
+        elif 13.1 <= v <= 14:
+            styles.append('background-color: #00FF00')
+        elif 12.1 <= v <= 13:
+            styles.append('background-color: #00FFFF')
+        elif 11.1 <= v <= 12:
+            styles.append('background-color: #FFFF00')
+        elif 10.1 <= v <= 11:
+            styles.append('background-color: #FFA500')
+        elif v <= 10:
+            styles.append('background-color: #FF0000')
+        else:
+            styles.append('background-color: #00008B')
+    return styles
+    
+def gps(s, props='background-color:black;color:white;font-weight:bold'):
+    return np.where((s == np.where((s == "U") & (s.notna()), s.values, np.nan)), props, '')
+
+  
+    
+
+
+    
+
+
+#def rf(s, props='background-color:black;color:white;font-weight:bold'):
     return np.where((s == np.where((s % 0.5 != 0) & (s.notna()), s.values, np.nan)), props, '')
 
-def temp(s, props='background-color:red;color:yellow;font-weight:bold'):
+#def temp(s, props='background-color:red;color:yellow;font-weight:bold'):
     return np.where((s == np.where((s < 0) & (s.notna()), s.values, np.nan)), props, '')
 
-def rh(s, props='background-color:red;color:yellow;font-weight:bold'):
+#def rh(s, props='background-color:red;color:yellow;font-weight:bold'):
     return np.where((s == np.where((s > 100) & (s.notna()), s.values, np.nan)), props, '')
 
-def mslp(s, props='background-color:red;color:yellow;font-weight:bold'):
+#def mslp(s, props='background-color:red;color:yellow;font-weight:bold'):
     return np.where((s == np.where((s.diff().abs() > 2) & (s.notna()), s.values, np.nan)), props, '')
 
-def battery(s, props='background-color:red;color:yellow;font-weight:bold'):
+#def battery(s, props='background-color:red;color:yellow;font-weight:bold'):
     return np.where((s == np.where((s < 11) & (s.notna()), s.values, np.nan)), props, '')
 
-def gps(s, props='background-color:red;color:yellow;font-weight:bold'):
+#def gps(s, props='background-color:red;color:yellow;font-weight:bold'):
     return np.where((s == np.where((s == "U") & (s.notna()), s.values, np.nan)), props, '')
 
 
@@ -488,7 +640,8 @@ def gps(s, props='background-color:red;color:yellow;font-weight:bold'):
 
 # File path for the Excel file
 # Define the file path
-file_path = os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx')
+# Define Excel export path
+excel_path = os.path.join(today_folder_path,'('+d0_2+' to '+d1_2+').xlsx')
 
 # Ensure the directory exists
 #directory = os.path.dirname(file_path)
@@ -501,7 +654,7 @@ file_path = os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2
 
 
 # Create a Pandas Excel writer using XlsxWriter as the engine
-with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
 
     # Iterate over unique districts and create a sheet for each district
     for district in complete_combined['DISTRICT'].unique():
@@ -514,11 +667,11 @@ with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
             {'selector': 'th.col_heading', 'props': [('font-weight', 'bold'), ('font-size', '14px')]}
         ])
         district_df.style.set_properties(**{'font-family':"Calibri",'font-size':'12pt','border':'1pt solid', 'text-align':"center"})\
-        .apply(rf, subset=['RF'])\
-        .apply(temp, subset=['MIN T', 'MAX T','TEMP'])\
-        .apply(rh, subset=['RF'])\
-        .apply(mslp, subset=['MSLP','TEMP'])\
-        .apply(battery, subset=['BATTERY (Volts)'])\
+        .apply(rf_color_range, subset=['RF'])\
+        .apply(temp_range, subset=['MIN T', 'MAX T','TEMP'])\
+        .apply(rh_range, subset=['RH (%)'])\
+        .apply(slp_range, subset=['SLP','MSLP'])\
+        .apply(bat_range, subset=['BATTERY (Volts)'])\
         .apply(gps, subset=['GPS'])\
         .to_excel(writer, sheet_name=district, index=False, engine='xlsxwriter')
         
@@ -528,16 +681,21 @@ with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
         worksheet = writer.sheets[district]
         
         # Set column widths (example widths, adjust as needed)
-        worksheet.set_column('A:A', 28)
-        worksheet.set_column('B:B', 15)
-        worksheet.set_column('C:C', 4)
-        worksheet.set_column('D:D', 6)
+        worksheet.set_column('A:A', 40)
+        worksheet.set_column('B:B', 9)
+        worksheet.set_column('C:C', 20)
+        worksheet.set_column('D:D', 10)
         worksheet.set_column('E:E', 6)
         worksheet.set_column('F:F', 6)
-        worksheet.set_column('G:G', 7)
-        worksheet.set_column('H:H', 7)
-        worksheet.set_column('I:I', 15)
-        worksheet.set_column('J:J', 4)
+        worksheet.set_column('G:G', 6)
+        worksheet.set_column('H:H', 9)
+        worksheet.set_column('I:I', 9)
+        worksheet.set_column('J:J', 9)
+        worksheet.set_column('K:K', 20)
+        worksheet.set_column('L:L', 5)
+
+        # Freeze the top row (row 0)
+        worksheet.freeze_panes(1, 0)
  
 
 exit()
