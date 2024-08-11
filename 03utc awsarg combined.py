@@ -33,6 +33,32 @@ y_day=t_day-timedelta(days=1)
 d0=y_day.strftime("%Y-%m-%d")
 d0_2 = y_day.strftime("%d-%m-%Y")
 
+
+# Get the path to the OneDrive
+OneDrive_path = os.path.join(os.path.expanduser("~"), "OneDrive")
+
+# Define the path to the "daily data" folder
+daily_data_path = os.path.join(OneDrive_path, "daily data")
+
+# Check if the "daily data" folder exists and create it if not
+if not os.path.exists(daily_data_path):
+    os.makedirs(daily_data_path)
+
+# Get today's date as a string in the format DD-MM-YYYY
+today_date = d1_2
+
+# Define the path to today's folder inside the "daily data" folder
+today_folder_path = os.path.join(daily_data_path, today_date)
+
+# Check if today's folder exists and create it if not
+if not os.path.exists(today_folder_path):
+    os.makedirs(today_folder_path)
+
+
+
+
+
+
 #Set display options to show full DataFrame
 #pd.set_option('display.max_rows', 1000000)
 pd.set_option('display.max_columns', 100)
@@ -714,7 +740,7 @@ styled_df = df.style\
 print('Creating Excel File...')
 
 # Define Excel export path
-excel_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx')
+excel_path = os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx')
 
 # Export to Excel with styling
 with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
@@ -783,7 +809,7 @@ from win32com import client
 excel = client.Dispatch("Excel.Application")
  
 # Read Excel File
-sheets = excel.Workbooks.Open(os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
+sheets = excel.Workbooks.Open(os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
 ws = sheets.Worksheets[0]
 
 sheets.Worksheets[0].PageSetup.Zoom = 85
@@ -797,7 +823,7 @@ sheets.Worksheets[0].PageSetup.BottomMargin = 5
 
  
 # Convert into PDF File
-ws.ExportAsFixedFormat(0, (os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).pdf')))
+ws.ExportAsFixedFormat(0, (os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).pdf')))
 
 sheets.Close(True)
 excel.Quit()
@@ -814,7 +840,7 @@ print('Creating pdf file for office copy...')
 
 
 # Define Excel export path
-excel_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\MAHARASHTRA ('+d0_2+' 3UTC office copy).xlsx')
+excel_path = os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx')
 
 # Export to Excel with styling
 with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
@@ -875,7 +901,7 @@ from win32com import client
 excel = client.Dispatch("Excel.Application")
 
 # Read Excel File
-sheets = excel.Workbooks.Open(os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\MAHARASHTRA ('+d0_2+' 3UTC office copy).xlsx'))
+sheets = excel.Workbooks.Open(os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
 ws = sheets.Worksheets[0]
 
 sheets.Worksheets[0].PageSetup.Zoom = 48
@@ -889,13 +915,13 @@ sheets.Worksheets[0].PageSetup.BottomMargin = 5
 
  
 # Convert into PDF File
-ws.ExportAsFixedFormat(0, (os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\MAHARASHTRA ('+d0_2+' 3UTC office copy).pdf')))
+ws.ExportAsFixedFormat(0, (os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC) office copy.pdf')))
 
 sheets.Close(True)
 excel.Quit()
 del excel
 
-os.remove((os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\MAHARASHTRA ('+d0_2+' 3UTC office copy).xlsx')))
+#os.remove(os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
 
 
 
@@ -1343,7 +1369,7 @@ styled_df = df.style\
 print('Creating Excel File...')
 
 # Define Excel export path
-excel_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\GOA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx')
+excel_path = os.path.join(today_folder_path,'GOA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx')
 
 # Export to Excel with styling
 with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
@@ -1412,7 +1438,7 @@ from win32com import client
 excel = client.Dispatch("Excel.Application")
  
 # Read Excel File
-sheets = excel.Workbooks.Open(os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\GOA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
+sheets = excel.Workbooks.Open(os.path.join(today_folder_path,'GOA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
 ws = sheets.Worksheets[0]
 
 sheets.Worksheets[0].PageSetup.Zoom = 85
@@ -1426,7 +1452,10 @@ sheets.Worksheets[0].PageSetup.BottomMargin = 5
 
  
 # Convert into PDF File
-ws.ExportAsFixedFormat(0, (os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\GOA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).pdf')))
+ws.ExportAsFixedFormat(0, (os.path.join(today_folder_path,'GOA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).pdf')))
+
+
+#os.remove(os.path.join(today_folder_path,'GOA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
 
 sheets.Close(True)
 excel.Quit()
@@ -1967,7 +1996,7 @@ styled_df = df.style\
 print('Creating Excel File...')
 
 # Define Excel export path
-excel_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\GUJARAT ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx')
+excel_path = os.path.join(today_folder_path,'GUJARAT ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx')
 
 # Export to Excel with styling
 with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
@@ -2036,7 +2065,7 @@ from win32com import client
 excel = client.Dispatch("Excel.Application")
  
 # Read Excel File
-sheets = excel.Workbooks.Open(os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\GUJARAT ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
+sheets = excel.Workbooks.Open(os.path.join(today_folder_path,'GUJARAT ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
 ws = sheets.Worksheets[0]
 
 sheets.Worksheets[0].PageSetup.Zoom = 85
@@ -2050,7 +2079,9 @@ sheets.Worksheets[0].PageSetup.BottomMargin = 5
 
  
 # Convert into PDF File
-ws.ExportAsFixedFormat(0, (os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\GUJARAT ('+d0_2+' 3UTC to '+d1_2+' 3UTC).pdf')))
+ws.ExportAsFixedFormat(0, os.path.join(today_folder_path,'GUJARAT ('+d0_2+' 3UTC to '+d1_2+' 3UTC).pdf'))
+
+#os.remove(os.path.join(today_folder_path,'GUJARAT ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
 
 sheets.Close(True)
 excel.Quit()
@@ -2061,5 +2092,5 @@ print('pdf file created for GUJARAT.')
 
 print('\n')
 
-print('All Required files have been generated in the Downloads folder of your PC.')
+print('Required files have been generated in the DAILY DATA folder under OneDrive folder of your PC.')
 time.sleep(15)
