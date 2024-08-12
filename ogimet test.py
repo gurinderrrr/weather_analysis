@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 # Reading the HTML table into a DataFrame
-df = pd.read_html('https://www.ogimet.com/cgi-bin/gsynres?lang=en&ord=REV&ndays=31&ano=2024&mes=05&day=31&hora=03&ind=43057')[2]
+df = pd.read_html('https://www.ogimet.com/cgi-bin/gsynres?lang=en&ord=DIR&ndays=1&ano=2024&mes=08&day=12&hora=03&ind=43057')[2]
 
 print(df)
 print(df.info())

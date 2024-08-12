@@ -508,10 +508,13 @@ def rf_color_range(rf_value):
 # Define the custom color function
 def temp_range(temp_values):
     styles = []
+    previous_value = None  # To keep track of the previous value for the .diff() logic
     for v in temp_values:
         if pd.isna(v):  # Handle NaN values
             styles.append('')  # No style for NaN cells
-        elif v < 0:  # if negative values
+        elif previous_value is not None and abs(v - previous_value) > 2:  # Check difference from the previous value
+            styles.append('background-color: black; color: white; font-weight: bold')
+        elif v <0:
             styles.append('background-color: black; color: white; font-weight: bold')
         elif 0.1 <= v <= 10.0:
             styles.append('background-color: #00FF00')
@@ -591,6 +594,8 @@ def bat_range(bat_values):
     for v in bat_values:
         if pd.isna(v):  # Handle NaN values
             styles.append('')  # No style for NaN cells
+        elif 14.1 <= v <= 15:
+            styles.append('background-color: #ADFF2F')
         elif 13.1 <= v <= 14:
             styles.append('background-color: #00FF00')
         elif 12.1 <= v <= 13:
