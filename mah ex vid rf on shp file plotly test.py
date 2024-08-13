@@ -5,6 +5,26 @@ import geopandas as gpd
 import plotly.express as px
 import plotly.graph_objects as go
 import json
+import os
+import pandas as pd
+import numpy as np
+import pandas.io.formats.style
+import csv
+from datetime import date,datetime,timedelta,timezone
+import os
+import time
+import xlsxwriter
+from styleframe import StyleFrame
+import openpyxl
+from openpyxl.styles import Alignment, Font, Border, Side, PatternFill
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.formatting.rule import FormulaRule
+import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter, MinuteLocator
+import itertools
+import matplotlib.dates as mdates
+import shutil
+#warnings.filterwarnings("ignore")
 
 
 
@@ -21,6 +41,27 @@ d1_2 = t_day.strftime("%d-%m-%Y")
 y_day=t_day-timedelta(days=1)
 d0=y_day.strftime("%Y-%m-%d")
 d0_2 = y_day.strftime("%d-%m-%Y")
+
+
+# Get the path to the OneDrive
+analysis_path = os.path.join(os.path.expanduser("~"), "Desktop\\gurinder")
+
+# Define the path to the "daily data" folder
+daily_data_path = os.path.join(analysis_path, "daily analysis")
+
+# Check if the "daily data" folder exists and create it if not
+if not os.path.exists(daily_data_path):
+    os.makedirs(daily_data_path)
+
+# Get today's date as a string in the format DD-MM-YYYY
+today_date = d1_2
+
+# Define the path to today's folder inside the "daily data" folder
+today_folder_path = os.path.join(daily_data_path, today_date)
+
+# Check if today's folder exists and create it if not
+if not os.path.exists(today_folder_path):
+    os.makedirs(today_folder_path)
 
 #Set display options to show full DataFrame
 #pd.set_option('display.max_rows', 1000000)
@@ -183,11 +224,14 @@ combine_tday_mh.drop(mah_drop_today, inplace=True)
 
 
                         #choose columns to include in combine_tday_mh
-combine_tday_mh=combine_tday_mh[['STATION','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP DAY MIN. (\'C)', 'SLP (hPa)']]
+combine_tday_mh=combine_tday_mh[['STATION','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP DAY MIN. (\'C)', 'SLP (hPa)','MSLP (hPa / gpm)','BATTERY (Volts)','GPS']]
 
 
                        #replace names
 combine_tday_mh.columns =combine_tday_mh.columns.str.replace('RAIN FALL CUM. SINCE 0300 UTC (mm)', 'RF',regex=False)
+combine_tday_mh.columns =combine_tday_mh.columns.str.replace('TEMP DAY MIN. (\'C)', 'MIN T',regex=False)
+combine_tday_mh.columns =combine_tday_mh.columns.str.replace('SLP (hPa)', 'SLP',regex=False)
+combine_tday_mh.columns =combine_tday_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
 combine_tday_mh.columns =combine_tday_mh.columns.str.replace('TEMP DAY MIN. (\'C)', 'MIN T',regex=False)
 
 
@@ -964,14 +1008,16 @@ df.insert(0, 'S.No.', range(1, 1 + len(df)))
 
 
 # Reorder columns as needed
-df = df[['S.No.','DISTRICT','STATIONS','TYPE','RF','MIN T','MAX T','SLP (hPa)','LAT','LONG']]
+df = df[['S.No.','DISTRICT','STATIONS','TYPE','RF','MIN T','MAX T','SLP','MSLP','BATTERY (Volts)','GPS','LAT','LONG']]
 
 df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
 df['MIN T'] = pd.to_numeric(df['MIN T'], errors='coerce')
 df['MAX T'] = pd.to_numeric(df['MAX T'], errors='coerce')
+df['SLP'] = pd.to_numeric(df['SLP'], errors='coerce')
+df['MSLP'] = pd.to_numeric(df['MSLP'], errors='coerce')
+df['BATTERY (Volts)'] = pd.to_numeric(df['BATTERY (Volts)'], errors='coerce')
 df['LAT'] = pd.to_numeric(df['LAT'], errors='coerce')
 df['LONG'] = pd.to_numeric(df['LONG'], errors='coerce')
-df['SLP (hPa)'] = pd.to_numeric(df['SLP (hPa)'], errors='coerce')
 
 
 #print(df)
@@ -1197,8 +1243,11 @@ fig.add_annotation(
     yanchor="middle"   # Vertical alignment of the text
 )
 
+# Define the path for the HTML file
+html_file_path = os.path.join(today_folder_path, 'RF PLOT.html')
+
 # Save the figure to an HTML file
-fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\RF PLOT.html')
+fig.write_html(html_file_path)
 
 
 
@@ -1447,8 +1496,13 @@ fig.add_annotation(
     yanchor="middle"   # Vertical alignment of the text
 )
 
+# Define the path for the HTML file
+html_file_path = os.path.join(today_folder_path, 'MIN T PLOT.html')
+
 # Save the figure to an HTML file
-fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\MIN T PLOT.html')
+fig.write_html(html_file_path)
+
+
 
 
 
@@ -1685,8 +1739,17 @@ fig.add_annotation(
     yanchor="middle"   # Vertical alignment of the text
 )
 
+# Define the path for the HTML file
+html_file_path = os.path.join(today_folder_path, 'MAX T PLOT.html')
+
 # Save the figure to an HTML file
-fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\MAX T PLOT.html')
+fig.write_html(html_file_path)
+
+
+
+
+
+
 
 
 
@@ -1802,19 +1865,19 @@ for _, row in gdf.iterrows():
     ))
 
 # Apply custom color and opacity functions to the dataframe
-df['color'] = df['SLP (hPa)'].apply(slp_range)
-df['opacity'] = df['SLP (hPa)'].apply(slp_opacity_range)
+df['color'] = df['SLP'].apply(slp_range)
+df['opacity'] = df['SLP'].apply(slp_opacity_range)
 
 def generate_slp_hover_text(row):
     station_type = row['TYPE']
     station_name = row['STATIONS']
-    mint = "DATA NOT AVAILABLE" if pd.isna(row['SLP (hPa)']) else f"{row['SLP (hPa)']} (hPa)"
-    return f"           <b>{station_type}</b><br>Station: {station_name}<br>SLP (hPa): {mint}"
+    mint = "DATA NOT AVAILABLE" if pd.isna(row['SLP']) else f"{row['SLP']} (hPa)"
+    return f"           <b>{station_type}</b><br>Station: {station_name}<br>SLP: {mint}"
 
 df['slp_hover_text'] = df.apply(generate_slp_hover_text, axis=1)
 
 # Mask for values that are NaN
-nan_mask = pd.isna(df['SLP (hPa)'])
+nan_mask = pd.isna(df['SLP'])
 
 # Mask for stations that are in all_temp_not_installed
 excluded_slp_stations_mask = df['STATIONS'].isin(no_slp)
@@ -1924,5 +1987,264 @@ fig.add_annotation(
     yanchor="middle"   # Vertical alignment of the text
 )
 
+# Define the path for the HTML file
+html_file_path = os.path.join(today_folder_path, 'SLP PLOT.html')
+
 # Save the figure to an HTML file
-fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\SLP PLOT.html')
+fig.write_html(html_file_path)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Define the custom color function
+def slp_range(slp_value):
+    if 500.1 <= slp_value <= 800.0:
+        return '#ADFF2F'
+    elif 800.1 <= slp_value <= 900.0:
+        return '#00FF00'
+    elif 900.1 <= slp_value <= 950.0:
+        return '#00FFFF'
+    elif 950.1 <= slp_value <= 1000.0:
+        return '#FFFF00'
+    elif 1000.1 <= slp_value <= 1025.0:
+        return '#FFA500'
+    elif slp_value >= 1025.1:
+        return '#FF0000'
+    else:
+        return '#00008B'
+
+# Define the custom opacity function
+def slp_opacity_range(temp_value):
+    if pd.isna(temp_value):
+        return 1
+    else:
+        return 1
+
+# Load shapefile
+#shapefile_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\maharashtra district excluding vidarbha.shp'
+#gdf = gpd.read_file(shapefile_path)
+
+# Convert the GeoDataFrame to GeoJSON format
+#geojson = json.loads(gdf.to_json())
+
+# Calculate the centroid of each district polygon
+#gdf['centroid'] = gdf.geometry.centroid
+#gdf['centroid_lon'] = gdf.centroid.x
+#gdf['centroid_lat'] = gdf.centroid.y
+
+# Create the figure
+fig = go.Figure()
+
+# Add shapefile boundaries
+for feature in geojson['features']:
+    coords = feature['geometry']['coordinates']
+    if feature['geometry']['type'] == 'Polygon':
+        lon, lat = zip(*coords[0])
+        fig.add_trace(go.Scattermapbox(
+            lon=lon,
+            lat=lat,
+            mode='lines',
+            line=dict(width=1, color='black'),
+            fill='toself',
+            fillcolor='rgba(255, 255, 255, 0.3)',
+            showlegend=False
+        ))
+    elif feature['geometry']['type'] == 'MultiPolygon':
+        for polygon in coords:
+            lon, lat = zip(*polygon[0])
+            fig.add_trace(go.Scattermapbox(
+                lon=lon,
+                lat=lat,
+                mode='lines',
+                line=dict(width=1, color='black'),
+                fill='toself',
+                fillcolor='rgba(255, 255, 255, 0.3)',
+                showlegend=False
+            ))
+
+# Add district names as text annotations with better visibility
+for _, row in gdf.iterrows():
+    fig.add_trace(go.Scattermapbox(
+        lon=[row['centroid_lon']],
+        lat=[row['centroid_lat']],
+        mode='text',
+        text=row['DISTRICT'],
+        showlegend=False,
+        textfont=dict(size=12, color='black'),  # Adjust text size and color as needed
+    ))
+
+# Apply custom color and opacity functions to the dataframe
+df['color'] = df['SLP'].apply(slp_range)
+df['opacity'] = df['SLP'].apply(slp_opacity_range)
+
+def generate_slp_hover_text(row):
+    station_type = row['TYPE']
+    station_name = row['STATIONS']
+    mint = "DATA NOT AVAILABLE" if pd.isna(row['MSLP']) else f"{row['MSLP']} (hPa)"
+    return f"           <b>{station_type}</b><br>Station: {station_name}<br>MSLP: {mint}"
+
+df['slp_hover_text'] = df.apply(generate_slp_hover_text, axis=1)
+
+# Mask for values that are NaN
+nan_mask = pd.isna(df['MSLP'])
+
+# Mask for stations that are in all_temp_not_installed
+excluded_slp_stations_mask = df['STATIONS'].isin(no_slp)
+
+fig.add_trace(go.Scattermapbox(
+    lon=df['LONG'][~nan_mask][~excluded_slp_stations_mask],
+    lat=df['LAT'][~nan_mask][~excluded_slp_stations_mask],
+    mode='markers',
+    marker=dict(
+        size=10,
+        color=df['color'][~nan_mask][~excluded_slp_stations_mask],
+        opacity=df['opacity'][~nan_mask][~excluded_slp_stations_mask]
+    ),
+    hoverinfo='text',
+    hovertext=df['slp_hover_text'][~nan_mask][~excluded_slp_stations_mask],
+    showlegend=False
+))
+
+
+
+# Add text 'O' for NaN values with black color
+fig.add_trace(go.Scattermapbox(
+    lon=df['LONG'][nan_mask][~excluded_slp_stations_mask],
+    lat=df['LAT'][nan_mask][~excluded_slp_stations_mask],
+    mode='text',
+    text='O',
+    textposition='middle center',
+    textfont=dict(size=15, color='red'),
+    hoverinfo='text',
+    hovertext=df['slp_hover_text'][nan_mask][~excluded_slp_stations_mask],
+    showlegend=False
+))
+
+# Add dummy traces for the legend
+legend_colors = {
+    '<b>500.1(hPa) <= mslp <= 800.0(hPa)</b>': '#ADFF2F',
+    '<b>800.1(hPa) <= mslp <= 900.0(hPa)</b>': '#00FF00',
+    '<b>900.1 (hPa)<= mslp <= 950.0(hPa)</b>': '#00FFFF',
+    '<b>950.1 (hPa)<= mslp <= 1000.0(hPa)</b>': '#FFFF00',
+    '<b>1000.1 (hPa)<= mslp <= 1025.0(hPa)</b>': '#FFA500',
+    '<b>mslp >= 1025.1(hPa)</b>': '#FF0000',
+    '<b>Data Not Available</b>': '#FFFFFF',
+    '<b>Faulty data</b>': '#FFFFFF',
+}
+
+
+
+
+
+for label, color in legend_colors.items():
+    fig.add_trace(go.Scattermapbox(
+        lon=[None],
+        lat=[None],
+        mode='markers',
+        marker=dict(size=30, color=color),
+        showlegend=True,
+        name=label
+    ))
+
+# Center of the bounding box
+bounds = gdf.total_bounds
+center_lon = (bounds[0] + bounds[2]) / 2
+center_lat = (bounds[1] + bounds[3]) / 2
+
+# Update layout for the map
+fig.update_layout(
+    mapbox=dict(
+        style='white-bg',
+        center=dict(lat=center_lat, lon=center_lon),
+        zoom=6  # Adjust the zoom level to an optimal value
+    ),
+    margin={"r": 0, "t": 30, "l": 0, "b": 0},
+    title={
+        'text': "<b>Mean Sea Level Pressure for Maharashtra (excluding Vidarbha): "f"{d1_2} 3UTC</b>",
+        'y': 0.98,
+        'x': 0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'
+    }
+)
+
+
+# Add the text "x" as an annotation
+fig.add_annotation(
+    x=1.037,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
+    y=0.814,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
+    text="O",  # Text to display
+    showarrow=False,  # Hide the arrow
+    font=dict(size=15, color="red"),  # Customize the text font and color
+    xref="paper",  # x reference to the figure, can also be 'x' for data coordinates
+    yref="paper",  # y reference to the figure, can also be 'y' for data coordinates
+    xanchor="center",  # Horizontal alignment of the text
+    yanchor="middle"   # Vertical alignment of the text
+)
+
+
+# Add the text "x" as an annotation
+fig.add_annotation(
+    x=1.037,  # x-coordinate in paper coordinates (0 to 1 range for the figure)
+    y=0.785,  # y-coordinate in paper coordinates (0 to 1 range for the figure)
+    text="X",  # Text to display
+    showarrow=False,  # Hide the arrow
+    font=dict(size=15, color="red"),  # Customize the text font and color
+    xref="paper",  # x reference to the figure, can also be 'x' for data coordinates
+    yref="paper",  # y reference to the figure, can also be 'y' for data coordinates
+    xanchor="center",  # Horizontal alignment of the text
+    yanchor="middle"   # Vertical alignment of the text
+)
+
+# Define the path for the HTML file
+html_file_path = os.path.join(today_folder_path, 'MSLP PLOT.html')
+
+# Save the figure to an HTML file
+fig.write_html(html_file_path)
+
+
+
+
+
+
+
+
+
+
