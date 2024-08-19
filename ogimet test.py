@@ -14,10 +14,12 @@ month_str = t_day.strftime("%m")  # Month as a string
 day_str = t_day.strftime("%d")    # Day as a string
 
 # Reading the HTML table into a DataFrame
-df = pd.read_html(f'https://www.ogimet.com/cgi-bin/gsynres?lang=en&ord=DIR&ndays=1&ano={year_str}&mes={month_str}&day={day_str}&hora=03&state=India')[2]
+#df = pd.read_html(f'https://www.ogimet.com/cgi-bin/gsynres?lang=en&ord=DIR&ndays=1&ano={year_str}&mes={month_str}&day={day_str}&hora=03&state=India')[2]
+df = pd.read_html(f'https://www.ogimet.com/display_synopsc2.php?lang=en&estado=India&tipo=ALL&ord=REV&nil=SI&fmt=html&ano=2024&mes=08&day=18&hora=03')[1]
 
-#print(df)
-#print(df.info())
+print(df)
+print(df.info())
+exit()
 
 
 
