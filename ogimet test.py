@@ -15,7 +15,7 @@ day_str = t_day.strftime("%d")    # Day as a string
 
 # Reading the HTML table into a DataFrame
 #df = pd.read_html(f'https://www.ogimet.com/cgi-bin/gsynres?lang=en&ord=DIR&ndays=1&ano={year_str}&mes={month_str}&day={day_str}&hora=03&state=India')[2]
-df = pd.read_html(f'https://www.ogimet.com/display_synopsc2.php?lang=en&estado=India&tipo=ALL&ord=REV&nil=SI&fmt=html&ano=2024&mes=08&day=18&hora=03')[1]
+df = pd.read_html(f'https://www.ogimet.com/display_synops2.php?lang=en&lugar=43057&tipo=ALL&ord=REV&nil=SI&fmt=html&ano=2024&mes=08&day=19&hora=03&anof=2024&mesf=08&dayf=19&horaf=03&send=send')[2]
 
 print(df)
 print(df.info())
