@@ -15,10 +15,20 @@ day_str = t_day.strftime("%d")    # Day as a string
 
 # Reading the HTML table into a DataFrame
 #df = pd.read_html(f'https://www.ogimet.com/cgi-bin/gsynres?lang=en&ord=DIR&ndays=1&ano={year_str}&mes={month_str}&day={day_str}&hora=03&state=India')[2]
-df = pd.read_html(f'https://www.ogimet.com/display_synops2.php?lang=en&lugar=43057&tipo=ALL&ord=REV&nil=SI&fmt=html&ano=2024&mes=08&day=19&hora=03&anof=2024&mesf=08&dayf=19&horaf=03&send=send')[2]
+
+#df = pd.read_html(f'https://www.ogimet.com/display_synops2.php?lang=en&lugar=43057&tipo=ALL&ord=REV&ano=2024&mes=08&day=19&hora=03&anof=2024&mesf=08&dayf=19&horaf=03')[2]
+
+df = pd.read_csv(f'http://www.ogimet.com/cgi-bin/getsynop?begin=202408190300&end=202408190300&state=Ind&lang=eng')
 
 print(df)
 print(df.info())
+df.to_csv('C:\\Users\\hp\\Desktop\\test ogi.csv')
+exit()
+# Extracting the 4th group for pressure
+pressure_group = df[3].str.split().str[5]
+
+print(pressure_group)
+#print(df.info())
 exit()
 
 
