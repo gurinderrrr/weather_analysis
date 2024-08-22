@@ -8,12 +8,16 @@ import time
 
 # Get today's date
 t_day = date.today()
+y_day=t_day-timedelta(days=1)
 
 # Separate year, month, and day as strings
 year_str = t_day.strftime("%Y")  # Year as a string
 month_str = t_day.strftime("%m")  # Month as a string
 day_str = t_day.strftime("%d")    # Day as a string
-
+# Separate year, month, and day as strings
+ytday_year_str = y_day.strftime("%Y")  # Year as a string
+ytday_month_str = y_day.strftime("%m")  # Month as a string
+ytday_day_str = y_day.strftime("%d")    # Day as a string
 
                      #generate list of aws and STATIONS
 all_index=[ 43057,
@@ -85,7 +89,7 @@ def convert_pressure(code):
     return None
 
 # Apply the function to the 'Pressure' column
-df_combined['Obs. Pressure (hPa)'] = df_combined['Pressure'].apply(convert_pressure)
+df_combined['Observatory Pressure (hPa)'] = df_combined['Pressure'].apply(convert_pressure)
 
 
 
@@ -102,44 +106,122 @@ def convert_min_temp(code):
     return float(code[2:]) / 10  # Convert the last three digits to temperature
 
 # Apply the conversion function
-df_combined['Obs. Min Temp (°C)'] = df_combined['Min Temp Code'].apply(convert_min_temp)
-
-
-print(df_combined)
-print(df_combined.info())
-
-df_combined.to_excel('C:\\Users\\hp\\Desktop\\test ogi.xlsx', index=False)
-exit()
-# Extracting the 4th group for pressure
-pressure_group = df[3].str.split().str[5]
-
-print(pressure_group)
-#print(df.info())
-exit()
+df_combined['Observatory Min Temp (°C)'] = df_combined['Min Temp Code'].apply(convert_min_temp)
 
 
 
+# Define the regex pattern for rainfall (matches either the code or nothing)
+rainfall_pattern = r'\b555(?:\s(0\d{4}))?\b'
 
-# Correct column selection based on the actual structure of the DataFrame
-# Inspecting the columns first
-#print(df.columns)
+# Extract the rainfall group from the REPORT column
+df_combined['Rainfall Code'] = df_combined['REPORT'].str.extract(rainfall_pattern)
+
+# Convert to actual rainfall, or default to 0.0 mm if missing
+def convert_rainfall(code):
+    if pd.isna(code):
+        return 0.0  # Default to 0.0 mm if the rainfall code is missing
+    return float(code) / 10  # Convert the code to rainfall in mm
+
+# Apply the conversion function
+df_combined['Observatory Rainfall (mm)'] = df_combined['Rainfall Code'].apply(convert_rainfall)
+
+
+df_combined=df_combined[['STATIONS','Observatory Rainfall (mm)','Observatory Min Temp (°C)','Observatory Pressure (hPa)']]
+
+
+#print(df_combined)
+#print(df_combined.info())
+
+#df_combined.to_excel('C:\\Users\\hp\\Desktop\\test ogi.xlsx', index=False)
 
 
 
-# Selecting the specific columns
-selected_columns = df.loc[:, [('Station', 'Station'), 
-                              ('Temperature (C)', 'Max'), 
-                              ('Temperature (C)', 'Min'), 
-                              ('Prec. (mm)', 'Prec. (mm)')
-                              ]]
 
-# Flattening the MultiIndex columns
-selected_columns.columns = ['Station', 'Max', 'Min', 'RF']
+
+
+
+
+
+
+
+
+
+
+
+dfy = pd.read_csv(f'http://www.ogimet.com/cgi-bin/getsynop?begin={ytday_year_str}{ytday_month_str}{ytday_day_str}1200&end={ytday_year_str}{ytday_month_str}{ytday_day_str}1200&state=Ind&lang=eng', header=None)
+
+# Assign your custom column names
+dfy.columns = ['WMO INDEX', 'YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'REPORT']
 
                         #choose columns to include in combine_tday_mh
-#selected_columns.columns =selected_columns.columns.str.replace('DATE(YYYY-MM-DD)', 'DATE',regex=False)
+dfy=dfy[['WMO INDEX','REPORT']]
 
-print(selected_columns)
-print(selected_columns.info())
 
-selected_columns.to_excel(os.path.join(os.path.join(os.environ['USERPROFILE']), 'Downloads\\ogimet may test.xlsx'),index=False)
+dfy_combined = all_index_df.merge(dfy, on='WMO INDEX', how='left')
+
+
+def dfy_map_sta_to_index_mh(row):
+    dfy_station_to_index = {
+        43057: 'MUMBAI_COLABA',
+        43003: 'MUMBAI_SANTA_CRUZ',
+        43110: 'RATNAGIRI',
+        43111: 'MAHABALESHWAR',
+        43113: 'SATARA',
+        43117: 'SOLAPUR',
+    }
+    
+    dfy_index = row['WMO INDEX']
+    if dfy_index in dfy_station_to_index:
+        return dfy_station_to_index[dfy_index]
+    else:
+        return ''
+
+
+dfy_combined['STATIONS']=dfy_combined.apply(dfy_map_sta_to_index_mh, axis=1)
+
+
+
+
+# Reorder columns as needed
+dfy_combined = dfy_combined[['WMO INDEX','STATIONS', 'REPORT']]
+
+
+
+
+# Define the regex pattern for minimum temperature
+max_temp_pattern = r'\b333\s(10\d{3})\b'
+
+# Extract the min temperature group from the REPORT column
+dfy_combined['Max Temp Code'] = dfy_combined['REPORT'].str.extract(max_temp_pattern)
+
+# Convert to actual temperature
+def convert_max_temp(code):
+    if pd.isna(code):
+        return None  # Handle NaN values
+    return float(code[2:]) / 10  # Convert the last three digits to temperature
+
+# Apply the conversion function
+dfy_combined['Observatory Max Temp (°C)'] = dfy_combined['Max Temp Code'].apply(convert_max_temp)
+
+
+dfy_combined=dfy_combined[['STATIONS','Observatory Max Temp (°C)']]
+
+
+df_full_combined = df_combined.merge(dfy_combined, on='STATIONS', how='left')
+
+df_full_combined=df_full_combined[['STATIONS','Observatory Rainfall (mm)','Observatory Min Temp (°C)','Observatory Max Temp (°C)','Observatory Pressure (hPa)']]
+
+
+print(df_full_combined)
+print(df_full_combined.info())
+
+df_full_combined.to_excel('C:\\Users\\hp\\Desktop\\test ogi final.xlsx', index=False)
+
+
+
+
+
+
+
+
+exit()
