@@ -34,7 +34,7 @@ d1_year = t_day.strftime("%Y")
 d1_month = t_day.strftime("%m-%Y")
 #print(d1_22)
 
-y_day=t_day-timedelta(days=7)
+y_day=t_day-timedelta(days=1)
 d0=y_day.strftime("%Y-%m-%d")
 d0_2 = y_day.strftime("%d-%m-%Y")
 d0_22 = y_day.strftime("%d-%m")

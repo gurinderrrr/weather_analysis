@@ -29,30 +29,69 @@ print('Creating required date and time')
 t_day = date.today()
 d1 = t_day.strftime("%Y-%m-%d")
 d1_2 = t_day.strftime("%d-%m-%Y")
+d1_22 = t_day.strftime("%d-%m")
+d1_year = t_day.strftime("%Y")
+d1_month = t_day.strftime("%m-%Y")
+#print(d1_22)
+
 y_day=t_day-timedelta(days=1)
 d0=y_day.strftime("%Y-%m-%d")
 d0_2 = y_day.strftime("%d-%m-%Y")
+d0_22 = y_day.strftime("%d-%m")
+#print(d0_22)
 
 
 # Get the path to the OneDrive
-OneDrive_path = os.path.join(os.path.expanduser("~"), "OneDrive")
+analysis_path = os.path.join(os.path.expanduser("~"), 'OneDrive')
 
 # Define the path to the "daily data" folder
-daily_data_path = os.path.join(OneDrive_path, "daily data")
+daily_data_path = os.path.join(analysis_path, "daily data")
 
 # Check if the "daily data" folder exists and create it if not
 if not os.path.exists(daily_data_path):
     os.makedirs(daily_data_path)
 
+
+
+
+
+# Define the path to the "daily data" folder
+daily_year_path = os.path.join(daily_data_path, d1_year)
+
+# Check if the "daily data" folder exists and create it if not
+if not os.path.exists(daily_year_path):
+    os.makedirs(daily_year_path)
+
+
+
+
+
+# Define the path to the "daily data" folder
+daily_month_path = os.path.join(daily_year_path, d1_month)
+
+# Check if the "daily data" folder exists and create it if not
+if not os.path.exists(daily_month_path):
+    os.makedirs(daily_month_path)
+
+
+
+
+
+
+
+
+
+
 # Get today's date as a string in the format DD-MM-YYYY
 today_date = d1_2
 
 # Define the path to today's folder inside the "daily data" folder
-today_folder_path = os.path.join(daily_data_path, today_date)
+today_folder_path = os.path.join(daily_month_path, today_date)
 
 # Check if today's folder exists and create it if not
 if not os.path.exists(today_folder_path):
     os.makedirs(today_folder_path)
+
 
 
 
