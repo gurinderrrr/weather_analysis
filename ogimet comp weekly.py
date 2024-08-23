@@ -10,9 +10,12 @@ import time
 t_day = date.today()
 d1 = t_day.strftime("%Y-%m-%d")
 d1_2 = t_day.strftime("%d-%m-%Y")
-y_day=t_day-timedelta(days=1)
+y_day=t_day-timedelta(days=7)
 d0=y_day.strftime("%Y-%m-%d")
 d0_2 = y_day.strftime("%d-%m-%Y")
+
+print(t_day,y_day)
+exit()
 
 # Separate year, month, and day as strings
 year_str = t_day.strftime("%Y")  # Year as a string
@@ -49,17 +52,18 @@ df = pd.read_csv(f'http://www.ogimet.com/cgi-bin/getsynop?begin={year_str}{month
 df.columns = ['WMO INDEX', 'YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'REPORT']
 
 # Filter rows where 'REPORT' does not start with 'BBXX' and 'date' equals '03'
-df = df[~df['REPORT'].str.startswith('BBXX') & (df['date'] == 03)]
+df = df[~df['REPORT'].str.startswith('BBXX') & (df['HOUR'] == 3)]
 
 
 
                         #choose columns to include in combine_tday_mh
 df=df[['WMO INDEX','REPORT']]
 
-print(df)
-exit()
+
 
 df_combined = all_index_df.merge(df, on='WMO INDEX', how='left')
+
+
 
 def map_sta_to_index_mh(row):
     station_to_index = {
@@ -82,6 +86,10 @@ df_combined['STATIONS']=df_combined.apply(map_sta_to_index_mh, axis=1)
 
 # Reorder columns as needed
 df_combined = df_combined[['WMO INDEX','STATIONS', 'REPORT']]
+
+print(df_combined)
+exit()
+
 
 
 # Adding a capture group to the regex pattern
