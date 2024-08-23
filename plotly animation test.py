@@ -7,20 +7,70 @@ import plotly.graph_objects as go
 shapefile_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\maharashtra district excluding vidarbha.shp'
 gdf = gpd.read_file(shapefile_path)
 
-# Example DataFrame for rainfall data (10 days of data)
-dates = pd.date_range(start='2024-08-01', end='2024-08-10')
-stations = ['Station_A', 'Station_B', 'Station_C']
-types = ['AWS', 'ARG', 'UR']
-data = {
-    'DATE': np.repeat(dates, len(stations)),
-    'STATION': stations * len(dates),
-    'TYPE': types * len(dates),
-    'RF': np.random.rand(len(dates) * len(stations)) * 100,  # Random rainfall data
-    'LAT': np.random.uniform(18, 20, len(dates) * len(stations)),
-    'LONG': np.random.uniform(73, 75, len(dates) * len(stations))
-}
+# Example DataFrame for rainfall data (30 days of data)
+dates = pd.date_range(start='2024-08-01', end='2024-08-30')
 
-df = pd.DataFrame(data)
+# Generate 50 random stations with lat/long spread across the map
+num_stations = 50
+np.random.seed(42)  # For reproducibility
+
+stations = [f'Station_{i}' for i in range(1, num_stations + 1)]
+types = np.random.choice(['AWS', 'ARG', 'UR'], num_stations)  # Randomly assign types
+
+# Generate random lat/long within specified bounds (Maharashtra region roughly)
+lats = np.random.uniform(18, 22, num_stations)  # Latitude range for Maharashtra
+longs = np.random.uniform(72, 79, num_stations)  # Longitude range for Maharashtra
+
+# Sort stations by longitude to simulate rain movement from west to northeast
+station_coords = sorted(zip(stations, lats, longs, types), key=lambda x: x[2])  # Sort by longitude
+
+# Simulate rainfall data showing movement from left to right (west to northeast)
+rainfall_data = []
+front_width = 1.5  # Width of the rain front in degrees
+
+for day, date in enumerate(dates):
+    # Determine the current position of the rain front
+    rain_front_start = 72 + (day / len(dates)) * (79 - 72)  # Start at 72 longitude and move towards 79
+    rain_front_end = rain_front_start + front_width
+    
+    for station, lat, lon, station_type in station_coords:
+        if rain_front_start <= lon <= rain_front_end:
+            rf = np.random.uniform(10, 100)  # Random rainfall within the rain front
+        else:
+            rf = 0  # No rain outside the front
+
+        rainfall_data.append({
+            'DATE': date,
+            'STATION': station,
+            'TYPE': station_type,
+            'RF': rf,
+            'LAT': lat,
+            'LONG': lon
+        })
+
+# Create DataFrame
+df = pd.DataFrame(rainfall_data)
+
+# Function to get custom color based on rainfall value
+def get_custom_color(rf):
+    if pd.isna(rf):
+        return 'black'
+    elif rf == 0:
+        return 'silver'
+    elif 0 < rf <= 2.5:
+        return '#98FB98'
+    elif 2.6 <= rf <= 15.5:
+        return '#7FFF00'
+    elif 15.6 <= rf <= 64.5:
+        return '#228B22'
+    elif 64.6 <= rf <= 115.5:
+        return '#FFFF00'
+    elif 115.6 <= rf <= 204.5:
+        return '#FF8C00'
+    elif rf > 204.5:
+        return '#FF0000'
+    else:
+        return '#00008B'
 
 # Generate the base map figure
 fig = go.Figure()
@@ -38,7 +88,7 @@ for _, row in gdf.iterrows():
             showlegend=False
         ))
     elif geom_type == 'MultiPolygon':
-        for polygon in row.geometry.geoms:  # Access individual polygons
+        for polygon in row.geometry.geoms:
             coords = np.array(polygon.exterior.coords.xy)
             fig.add_trace(go.Scattermapbox(
                 lon=coords[0].tolist(),
@@ -52,46 +102,46 @@ for _, row in gdf.iterrows():
 frames = []
 for date in dates:
     date_data = df[df['DATE'] == date]
-    frames.append(go.Frame(
-        data=[go.Scattermapbox(
-            lon=date_data['LONG'].tolist(),  # Convert to list
-            lat=date_data['LAT'].tolist(),   # Convert to list
-            mode='markers',
-            marker=dict(
-                size=10,
-                color='blue',  # Example color, you can use your custom color function here
-                opacity=0.7
-            ),
-            text=date_data['STATION'],
-            hoverinfo='text'
-        )],
-        name=str(date)
-    ))
+    frame_data = go.Scattermapbox(
+        lon=date_data['LONG'].tolist(),
+        lat=date_data['LAT'].tolist(),
+        mode='markers',
+        marker=dict(
+            size=10,
+            color=[get_custom_color(rf) for rf in date_data['RF']],
+            opacity=0.7
+        ),
+        text=[f"{station} ({rf:.1f} mm)" for station, rf in zip(date_data['STATION'], date_data['RF'])],  # Enhanced hover info
+        hoverinfo='text'
+    )
+    frames.append(go.Frame(data=[frame_data], name=str(date)))
 
 fig.frames = frames
 
-# Add slider
+# Update layout to center the map and adjust zoom to show entire area
 fig.update_layout(
     mapbox=dict(
         style='white-bg',
-        zoom=5,
-        center=dict(lat=19, lon=74)
+        zoom=6.3,  # Adjust zoom level to fit the map properly
+        center=dict(lat=20, lon=75),  # Center the map to fit Maharashtra region
+        layers=[]  # To make sure no additional layers obstruct the map
     ),
-    sliders=[{
-        "steps": [
-            {"args": [[str(date)], {"frame": {"duration": 1000, "redraw": True}, "mode": "immediate"}],
-             "label": str(date), "method": "animate"}
-            for date in dates
-        ],
-        "active": 0,
-        "x": 0.1,
-        "y": 0,
-        "xanchor": "left",
-        "yanchor": "top"
-    }],
+    # Commenting out the sliders parameter to hide the slider
+    # sliders=[{
+    #     "steps": [
+    #         {"args": [[str(date)], {"frame": {"duration": 500, "redraw": True}, "mode": "immediate"}],
+    #          "label": str(date), "method": "animate"}
+    #         for date in dates
+    #     ],
+    #     "active": 0,
+    #     "x": 0.1,
+    #     "y": 0,
+    #     "xanchor": "left",
+    #     "yanchor": "top"
+    # }],
     updatemenus=[{
         "buttons": [
-            {"args": [None, {"frame": {"duration": 1000, "redraw": True}, "fromcurrent": True}],
+            {"args": [None, {"frame": {"duration": 500, "redraw": True}, "fromcurrent": True}],
              "label": "Play", "method": "animate"},
             {"args": [[None], {"frame": {"duration": 0, "redraw": True}, "mode": "immediate"}],
              "label": "Pause", "method": "animate"}
@@ -108,4 +158,4 @@ fig.update_layout(
 )
 
 # Save the animated figure to an HTML file
-fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\RF_PLOT_shapefile_animation.html')
+fig.write_html('C:\\Users\\hp\\Desktop\\gurinder\\python test\\RF_PLOT_shapefile_animation_50stations_30days_moving_rain_no_slider.html')
