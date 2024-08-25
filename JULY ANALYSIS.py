@@ -637,6 +637,12 @@ df_sorted['LONG'] = pd.to_numeric(df_sorted['LONG'], errors='coerce')
 shapefile_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\maharashtra district excluding vidarbha.shp'
 gdf = gpd.read_file(shapefile_path)
 
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import geopandas as gpd
+
+# Assuming you have already set up your data and GeoDataFrame `gdf`
+
 # Function to get custom color based on rainfall value
 def get_custom_color(rf):
     if pd.isna(rf):
@@ -658,49 +664,41 @@ def get_custom_color(rf):
     else:
         return '#00008B'
 
-# Prepare the figure and axis
-fig, ax = plt.subplots(figsize=(10, 10))
+# Set up the figure and axis
+fig, ax = plt.subplots(figsize=(10, 8))
+gdf.plot(ax=ax, color='none', edgecolor='black')  # Plot the shapefile boundaries
 
-# Plot the shapefile boundaries
-gdf.boundary.plot(ax=ax, linewidth=1, color='black')
-
-# Initialize a scatter plot, which will be updated in the animation
-scat = ax.scatter([], [], s=10, c=[], cmap='rainbow', edgecolor='k', zorder=5)
-
-# Set limits and title
-ax.set_xlim(gdf.total_bounds[0], gdf.total_bounds[2])
-ax.set_ylim(gdf.total_bounds[1], gdf.total_bounds[3])
-ax.set_title('Rainfall Animation')
-
-# Create a color legend
-legend_patches = [
-    mpatches.Patch(color='#98FB98', label='0.1-2.5 mm'),
-    mpatches.Patch(color='#7FFF00', label='2.6-15.5 mm'),
-    mpatches.Patch(color='#228B22', label='15.6-64.5 mm'),
-    mpatches.Patch(color='#FFFF00', label='64.6-115.5 mm'),
-    mpatches.Patch(color='#FF8C00', label='115.6-204.5 mm'),
-    mpatches.Patch(color='#FF0000', label='>204.5 mm'),
-    mpatches.Patch(color='silver', label='0 mm'),
-    mpatches.Patch(color='black', label='N/A'),
-]
-ax.legend(handles=legend_patches, loc='upper left', title='Rainfall (mm)')
-
-# Animation update function
+# Function to update the plot for each frame
 def update(date):
+    ax.clear()
+    gdf.plot(ax=ax, color='none', edgecolor='black')  # Re-plot the shapefile boundaries
+
     date_data = df_sorted[df_sorted['DATE'] == date]
-    colors = [get_custom_color(rf) for rf in date_data['RF']]
-    scat.set_offsets(date_data[['LONG', 'LAT']])
-    scat.set_color(colors)
-    ax.set_title(f'Rainfall Animation - {date}')
-    return scat,
+    
+    # Scatter plot with filled circles
+    sc = ax.scatter(
+        date_data['LONG'],
+        date_data['LAT'],
+        s=100,  # Adjust size as needed
+        c=[get_custom_color(rf) for rf in date_data['RF']],
+        edgecolors='black',  # Border color
+        facecolors=[get_custom_color(rf) for rf in date_data['RF']],  # Fill color
+        linewidth=1.5,  # Adjust border thickness if needed
+        alpha=0.7
+    )
+
+    ax.set_title(f"Rainfall on {date}")
+    ax.set_xlabel("Longitude")
+    ax.set_ylabel("Latitude")
 
 # Create the animation
 dates = df_sorted['DATE'].unique()
-anim = FuncAnimation(fig, update, frames=dates, interval=500, blit=True)
+ani = animation.FuncAnimation(
+    fig, update, frames=dates, repeat=False, interval=1000 
+)
 
-# Save the animation using FFmpeg
-output_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\RF_PLOT_shapefile_animation_50stations_30days.mp4'
-writer = FFMpegWriter(fps=2, metadata=dict(artist='Me'), bitrate=1800)
-anim.save(output_path, writer=writer)
+# Save the animation as an MP4 file
+output_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\rainfall_animation.mp4'
+ani.save(output_path, writer='ffmpeg', fps=2)
 
 plt.show()
