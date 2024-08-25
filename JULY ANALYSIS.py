@@ -665,18 +665,24 @@ def get_custom_color(rf):
         return '#00008B'
 
 # Set up the figure and axis
-fig, ax = plt.subplots(figsize=(10, 8))
-gdf.plot(ax=ax, color='none', edgecolor='black')  # Plot the shapefile boundaries
+fig, ax = plt.subplots(figsize=(22, 15))  # Adjust the figsize to stretch horizontally
+ax.set_aspect('auto')  # Set aspect ratio to 'auto' to allow full stretching
+
+# Remove default padding
+plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+
+# Plot the shapefile boundaries
+gdf.plot(ax=ax, color='none', edgecolor='black')
 
 # Function to update the plot for each frame
 def update(date):
     ax.clear()
-    gdf.plot(ax=ax, color='none', edgecolor='black')  # Re-plot the shapefile boundaries
+    gdf.plot(ax=ax, color='none', edgecolor='black')
 
     date_data = df_sorted[df_sorted['DATE'] == date]
     
     # Scatter plot with filled circles
-    sc = ax.scatter(
+    ax.scatter(
         date_data['LONG'],
         date_data['LAT'],
         s=100,  # Adjust size as needed
@@ -694,7 +700,7 @@ def update(date):
 # Create the animation
 dates = df_sorted['DATE'].unique()
 ani = animation.FuncAnimation(
-    fig, update, frames=dates, repeat=False, interval=1000 
+    fig, update, frames=dates, repeat=False
 )
 
 # Save the animation as an MP4 file
