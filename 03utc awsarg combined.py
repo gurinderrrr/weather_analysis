@@ -2,8 +2,6 @@ print('Importing required libraries.')
 # import libraries
 import pandas as pd
 import numpy as np
-import pandas.io.formats.style
-import csv
 from datetime import date,datetime
 from datetime import timedelta
 import os
