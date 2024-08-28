@@ -208,7 +208,7 @@ combine_tday_mh.drop(mah_drop_today, inplace=True)
 
 
                             #choose columns to include in combine_tday_mh
-combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP DAY MIN. (\'C)','TEMP DAY MAX. (\'C)','TEMP. (\'C)','RH (%)','MSLP (hPa / gpm)','SLP (hPa)','BATTERY (Volts)','GPS']]
+combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP DAY MIN. (\'C)','TEMP DAY MAX. (\'C)','TEMP. (\'C)','WIND DIR 10 m (DEG)','WIND SPEED 10 m (Kt)','WIND SPEED MAX / GUST 10 m (Kt)','RH (%)','MSLP (hPa / gpm)','SLP (hPa)','BATTERY (Volts)','GPS']]
 
 
 
@@ -222,6 +222,9 @@ combine_tday_mh.columns=combine_tday_mh.columns.str.replace('RAIN FALL CUM. SINC
 combine_tday_mh.columns=combine_tday_mh.columns.str.replace('TEMP DAY MIN. (\'C)', 'MIN T',regex=False)
 combine_tday_mh.columns=combine_tday_mh.columns.str.replace('TEMP DAY MAX. (\'C)', 'MAX T',regex=False)
 combine_tday_mh.columns=combine_tday_mh.columns.str.replace('TEMP. (\'C)', 'TEMP',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('WIND DIR 10 m (DEG)', 'WIND DIR (DEG)',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('WIND SPEED 10 m (Kt)', 'WIND SPEED (Kt)',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('WIND SPEED MAX / GUST 10 m (Kt)', 'WIND SPEED MAX / GUST (Kt)',regex=False)
 combine_tday_mh.columns=combine_tday_mh.columns.str.replace('SLP (hPa)', 'SLP',regex=False)
 combine_tday_mh.columns=combine_tday_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
 
@@ -496,7 +499,8 @@ complete_combined['DISTRICT']=complete_combined.apply(map_dis_to_sta_mh, axis=1)
 
 #complete_combined['DATETIME (UTC)'] = pd.to_datetime(complete_combined['DATETIME (UTC)'])
 
-complete_combined = complete_combined[['DISTRICT', 'STATIONS','AWS/ARG', 'DATETIME (UTC)', 'RF', 'MIN T', 'MAX T', 'TEMP', 'RH (%)','SLP','MSLP', 'BATTERY (Volts)', 'GPS']]
+complete_combined = complete_combined[['DISTRICT', 'STATIONS','AWS/ARG', 'DATETIME (UTC)', 'RF', 'MIN T', 'MAX T', 'TEMP', 'WIND DIR (DEG)','WIND SPEED (Kt)','WIND SPEED MAX / GUST (Kt)', 'RH (%)','SLP','MSLP', 'BATTERY (Volts)', 'GPS']]
+
 
 #print(complete_combined)
 #print('unique stations in complete_combined: ',complete_combined['STATIONS'].nunique())
@@ -507,6 +511,9 @@ complete_combined['RF'] = pd.to_numeric(complete_combined['RF'], errors='coerce'
 complete_combined['MIN T'] = pd.to_numeric(complete_combined['MIN T'], errors='coerce')
 complete_combined['MAX T'] = pd.to_numeric(complete_combined['MAX T'], errors='coerce')
 complete_combined['TEMP'] = pd.to_numeric(complete_combined['TEMP'], errors='coerce')
+complete_combined['WIND DIR (DEG)'] = pd.to_numeric(complete_combined['WIND DIR (DEG)'], errors='coerce')
+complete_combined['WIND SPEED (Kt)'] = pd.to_numeric(complete_combined['WIND SPEED (Kt)'], errors='coerce')
+complete_combined['WIND SPEED MAX / GUST (Kt)'] = pd.to_numeric(complete_combined['WIND SPEED MAX / GUST (Kt)'], errors='coerce')
 complete_combined['SLP'] = pd.to_numeric(complete_combined['SLP'], errors='coerce')
 complete_combined['MSLP'] = pd.to_numeric(complete_combined['MSLP'], errors='coerce')
 complete_combined['BATTERY (Volts)'] = pd.to_numeric(complete_combined['BATTERY (Volts)'], errors='coerce')
@@ -560,6 +567,32 @@ def temp_range(temp_values):
         elif 30.1 <= v <= 40.0:
             styles.append('background-color: #FFA500')
         elif v >= 40.1:
+            styles.append('background-color: #FF0000')
+        else:
+            styles.append('background-color: #00008B')
+    return styles
+
+
+def wind_color_range(wind_value):
+    styles = []
+    for v in wind_value:
+        if pd.isna(v):  # Handle NaN values
+            styles.append('')  # No style for NaN cells
+        elif v == 0:
+            styles.append('background-color: #71797E')
+        elif 1 < v <= 10:
+            styles.append('background-color: #ADFF2F')
+        elif 11 <= v <= 20:
+            styles.append('background-color: #ADFF2F')
+        elif 21 <= v <= 30:
+            styles.append('background-color: #00FF00')
+        elif 31 <= v <= 40:
+            styles.append('background-color: #00FFFF')
+        elif 64.5 <= v <= 115.5:
+            styles.append('background-color: #FFFF00')
+        elif 115.6 <= v <= 204.4:
+            styles.append('background-color: #FFA500')
+        elif v > 204.4:
             styles.append('background-color: #FF0000')
         else:
             styles.append('background-color: #00008B')
