@@ -639,6 +639,7 @@ gdf = gpd.read_file(shapefile_path)
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.animation import PillowWriter  # Import PillowWriter
 import geopandas as gpd
 
 # Assuming you have already set up your data and GeoDataFrame `gdf`
@@ -665,11 +666,9 @@ def get_custom_color(rf):
         return '#00008B'
 
 # Set up the figure and axis
-fig, ax = plt.subplots(figsize=(22, 15))  # Adjust the figsize to stretch horizontally
-ax.set_aspect('auto')  # Set aspect ratio to 'auto' to allow full stretching
-
-# Remove default padding
-plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+fig, ax = plt.subplots(figsize=(22, 15))  # Keep your desired figure size
+# Remove the axes
+ax.axis('off')
 
 # Plot the shapefile boundaries
 gdf.plot(ax=ax, color='none', edgecolor='black')
@@ -677,6 +676,7 @@ gdf.plot(ax=ax, color='none', edgecolor='black')
 # Function to update the plot for each frame
 def update(date):
     ax.clear()
+    ax.axis('off')  # Ensure the axes remain off after clearing
     gdf.plot(ax=ax, color='none', edgecolor='black')
 
     date_data = df_sorted[df_sorted['DATE'] == date]
@@ -685,26 +685,24 @@ def update(date):
     ax.scatter(
         date_data['LONG'],
         date_data['LAT'],
-        s=100,  # Adjust size as needed
+        s=50,  # Adjust size as needed
         c=[get_custom_color(rf) for rf in date_data['RF']],
         edgecolors='black',  # Border color
         facecolors=[get_custom_color(rf) for rf in date_data['RF']],  # Fill color
         linewidth=1.5,  # Adjust border thickness if needed
-        alpha=0.7
+        alpha=1
     )
 
     ax.set_title(f"Rainfall on {date}")
-    ax.set_xlabel("Longitude")
-    ax.set_ylabel("Latitude")
 
 # Create the animation
 dates = df_sorted['DATE'].unique()
 ani = animation.FuncAnimation(
-    fig, update, frames=dates, repeat=False
+    fig, update, frames=dates, repeat=False, interval=2000
 )
 
-# Save the animation as an MP4 file
-output_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\rainfall_animation.mp4'
-ani.save(output_path, writer='ffmpeg', fps=2)
+# Save the animation as a GIF file
+output_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\rainfall_animation.gif'
+ani.save(output_path, writer=PillowWriter(fps=2))  # Use PillowWriter to save as GIF
 
 plt.show()
