@@ -702,6 +702,8 @@ def color_range(val):
 
     if pd.isna(rf_value):  # Handle NaN values
         return ''
+    elif rf_value % 0.5 != 0:  # if not multiple of 0.5
+        return 'background-color: black; color: white; font-weight: bold'
     elif 1 <= rf_value <= 2.4:  # lr
         return 'background-color: #ADFF2F; font-weight: bold'
     elif 2.5 <= rf_value <= 15.5:  # mr
