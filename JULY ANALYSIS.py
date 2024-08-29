@@ -148,8 +148,8 @@ print('Checking if the AWS/ARG website is working...')
 
 try:
     #Collect today's data (adjust your URLs accordingly)
-    today_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=AWSAGRO&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e=2024-07-01&f=2024-07-31&g=03&h=00')[0]
-    arg_today_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=ARG&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e=2024-07-01&f=2024-07-31&g=03&h=00')[0]
+    today_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=AWSAGRO&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e=2024-07-01&f=2024-07-31&g=ALL_HOUR&h=ALL_MINUTE')[0]
+    arg_today_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=ARG&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e=2024-07-01&f=2024-07-31&g=ALL_HOUR&h=ALL_MINUTE')[0]
 
     print('Website working.')
 
@@ -201,10 +201,10 @@ combined_all_stations = all_stations_df.merge(combine_tday_mh, on='STATION', how
 #Define the start date, end date, and frequency
 start_date = '2024-07-01'
 end_date = '2024-07-31'
-frequency = '1D'
+frequency = '15m'
 
 #Create a datetime range
-datetime_range = pd.date_range(start=start_date, end=end_date, freq=frequency).strftime('%Y-%m-%d')
+datetime_range = pd.date_range(start=start_date, end=end_date, freq=frequency).strftime('%d-%m-%Y %H:%M')
 
 # Reverse the order
 #datetime_range = datetime_range[::-1]
@@ -646,24 +646,16 @@ import geopandas as gpd
 
 # Function to get custom color based on rainfall value
 def get_custom_color(rf):
-    if pd.isna(rf):
-        return 'black'
-    elif rf == 0:
-        return 'silver'
-    elif 0 < rf <= 2.5:
+    if 1 < rf <= 64.4:
         return '#98FB98'
-    elif 2.6 <= rf <= 15.5:
-        return '#7FFF00'
-    elif 15.6 <= rf <= 64.5:
-        return '#228B22'
-    elif 64.6 <= rf <= 115.5:
+    elif 64.5 <= rf <= 115.5:
         return '#FFFF00'
-    elif 115.6 <= rf <= 204.5:
-        return '#FF8C00'
-    elif rf > 204.5:
+    elif 115.6 <= rf <= 204.4:
+        return '#FFA500'
+    elif rf > 204.4:
         return '#FF0000'
     else:
-        return '#00008B'
+        return 'white'
 
 # Set up the figure and axis
 fig, ax = plt.subplots(figsize=(22, 15))  # Keep your desired figure size
@@ -679,7 +671,8 @@ def update(date):
     ax.axis('off')  # Ensure the axes remain off after clearing
     gdf.plot(ax=ax, color='none', edgecolor='black')
 
-    date_data = df_sorted[df_sorted['DATE'] == date]
+    # Filter out data points with missing or zero rainfall
+    date_data = df_sorted[(df_sorted['DATE'] == date) & (df_sorted['RF'] > 0)]
     
     # Scatter plot with filled circles
     ax.scatter(
