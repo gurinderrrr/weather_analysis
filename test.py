@@ -131,8 +131,8 @@ combined_all_03_stations = combined_all_03_stations.drop(columns=['DATE','TIME (
 
 
 #Define the start date, end date, and frequency
-start_datetime = d0 + ' 03:00'
-end_datetime = d1 + ' 03:00'
+start_datetime = d0 + ' 00:00'
+end_datetime = d1 + ' 00:00'
 frequency = '3H'
 
 #Create a datetime range
@@ -154,12 +154,10 @@ datetime_range = pd.date_range(start=start_datetime, end=end_datetime, freq=freq
 # Create a DataFrame with the datetime range
 datetime_df = pd.DataFrame(datetime_range, columns=['DATETIME (UTC)'])
 
-# Filter rows where 'REPORT' does not start with 'BBXX' and 'date' equals '03'
-datetime_df = datetime_df[~datetime_df['DATETIME (UTC)'] == '21:00']
 
 print(datetime_df)
 print('rows in datetime_df: ',len(datetime_df))
-exit()
+
 
 # Extract unique values
 stations = combined_all_03_stations['STATIONS'].unique()

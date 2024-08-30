@@ -48,13 +48,13 @@ all_index_df['WMO INDEX'] = all_index_df['WMO INDEX'].astype(np.int64)
 
 #df = pd.read_html(f'https://www.ogimet.com/display_synops2.php?lang=en&lugar=43057&tipo=ALL&ord=REV&ano=2024&mes=08&day=19&hora=03&anof=2024&mesf=08&dayf=19&horaf=03')[2]
 
-df = pd.read_csv(f'http://www.ogimet.com/cgi-bin/getsynop?begin={year_str}{month_str}{ytday_day_str}0300&end={year_str}{month_str}{day_str}0300&state=Ind&lang=eng', header=None)
+df = pd.read_csv(f'http://www.ogimet.com/cgi-bin/getsynop?begin={year_str}{month_str}{ytday_day_str}0000&end={year_str}{month_str}{day_str}0000&state=Ind&lang=eng', header=None)
 
 # Assign your custom column names
 df.columns = ['WMO INDEX', 'YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'REPORT']
 
 # Filter rows where 'REPORT' does not start with 'BBXX' and 'date' equals '03'
-df = df[~df['REPORT'].str.startswith('BBXX') & ((df['HOUR'] == 0)|(df['HOUR'] == 3)|(df['HOUR'] == 6)|(df['HOUR'] == 9)|(df['HOUR'] == 12)|(df['HOUR'] == 15)|(df['HOUR'] == 18))]
+df = df[~df['REPORT'].str.startswith('BBXX') & ((df['HOUR'] == 0)|(df['HOUR'] == 3)|(df['HOUR'] == 6)|(df['HOUR'] == 9)|(df['HOUR'] == 12)|(df['HOUR'] == 15)|(df['HOUR'] == 18)|(df['HOUR'] == 21))]
 
 
 
@@ -206,7 +206,7 @@ df_combined=df_combined[['STATIONS','YEAR', 'MONTH', 'DAY', 'HOUR','Observatory 
 df_combined.to_excel('C:\\Users\\hp\\Desktop\\test ogi.xlsx', index=False)
 
 
-
+exit()
 
 
 
