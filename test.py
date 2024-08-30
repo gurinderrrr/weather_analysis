@@ -131,32 +131,44 @@ combined_all_03_stations = combined_all_03_stations.drop(columns=['DATE','TIME (
 
 
 #Define the start date, end date, and frequency
-start_datetime = d0 + ' 00:00'
-end_datetime = d1 + ' 00:00'
+start_date = d0
+end_date = d1
+frequency = '1D'
+
+#Create a datetime range
+date_range = pd.date_range(start=start_date, end=end_date, freq=frequency).strftime('%d-%m-%Y')
+
+# Create a DataFrame with the datetime range
+date_df = pd.DataFrame(date_range, columns=['DATE'])
+
+
+
+#Define the start date, end date, and frequency
+start_time = '00:00'
+end_time = '21:00'
 frequency = '3H'
 
 #Create a datetime range
-datetime_range = pd.date_range(start=start_datetime, end=end_datetime, freq=frequency).strftime('%d-%m-%Y %H:%M')
-
-
-
-# Reverse the order
-#datetime_range = datetime_range[::-1]
-
-#print(datetime_range)
-
-
-
-
-
-
+time_range = pd.date_range(start=start_time, end=end_time, freq=frequency).strftime('%H:%M')
 
 # Create a DataFrame with the datetime range
-datetime_df = pd.DataFrame(datetime_range, columns=['DATETIME (UTC)'])
+time_df = pd.DataFrame(time_range, columns=['TIME (UTC)'])
 
 
-print(datetime_df)
-print('rows in datetime_df: ',len(datetime_df))
+# Extract unique values
+dates = date_df['DATE'].unique()
+times = time_df['TIME (UTC)'].unique()
+
+
+
+# Create a DataFrame with all combinations of 'station' and 'datetime'
+all_datetime_combinations = pd.DataFrame(list(itertools.product(dates, times)), columns=['DATE', 'TIME (UTC)'])
+
+
+print(all_datetime_combinations)
+print('rows in all_datetime_combinations: ',len(all_datetime_combinations))
+
+exit()
 
 
 # Extract unique values
