@@ -180,7 +180,7 @@ combine_tday_mh.drop(mah_drop_today, inplace=True)
 
 
                         #choose columns to include in combine_tday_mh
-combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','RAIN FALL CUM. SINCE 0300 UTC (mm)']]
+combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)']]
 
 
                        #replace names
@@ -188,23 +188,25 @@ combine_tday_mh.columns =combine_tday_mh.columns.str.replace('DATE(YYYY-MM-DD)',
 combine_tday_mh.columns =combine_tday_mh.columns.str.replace('RAIN FALL CUM. SINCE 0300 UTC (mm)', 'RF',regex=False)
 
 
+combine_tday_mh['DATETIME'] = pd.to_datetime(combine_tday_mh['DATE'] + ' ' + combine_tday_mh['TIME (UTC)'])
+
 #Merge with all_mh to include all stations
 all_stations_df = pd.DataFrame({'STATION': all_mh})
 combined_all_stations = all_stations_df.merge(combine_tday_mh, on='STATION', how='left')
 
 #print(combined_all_stations['STATION'].nunique())
 
-
+#exit()
 
 
 
 #Define the start date, end date, and frequency
 start_date = '2024-07-01'
 end_date = '2024-07-31'
-frequency = '15m'
+frequency = '1D'
 
 #Create a datetime range
-datetime_range = pd.date_range(start=start_date, end=end_date, freq=frequency).strftime('%d-%m-%Y %H:%M')
+date_range = pd.date_range(start=start_date, end=end_date, freq=frequency).strftime('%d-%m-%Y')
 
 # Reverse the order
 #datetime_range = datetime_range[::-1]
@@ -212,24 +214,56 @@ datetime_range = pd.date_range(start=start_date, end=end_date, freq=frequency).s
 #print(datetime_range)
 
 
+# Create a DataFrame with the datetime range
+date_df = pd.DataFrame(date_range, columns=['DATE'])
+
+print(date_df)
+print('rows in date_df: ',len(date_df))
+exit()
 
 
 
+
+
+
+
+
+#Define the start date, end date, and frequency
+start_time = '00:00:00'
+end_time = '23:45:00'
+frequency = '15T'
+
+#Create a datetime range
+time_range = pd.date_range(start=start_time, end=end_time, freq=frequency).strftime('%H:%M')
+
+# Reverse the order
+#datetime_range = datetime_range[::-1]
+
+#print(datetime_range)
 
 
 # Create a DataFrame with the datetime range
-datetime_df = pd.DataFrame(datetime_range, columns=['DATE'])
+time_df = pd.DataFrame(time_range, columns=['TIME (UTC)'])
 
 #print(datetime_df)
 #print('rows in datetime_df: ',len(datetime_df))
 
 
+
+
+
+
+
+
+
+
+
 # Extract unique values
-stations = all_stations_df['STATION'].unique()
-datetimes = datetime_df['DATE'].unique()
+dates = date_df['DATE'].unique()
+times = time_df['TIME (UTC)'].unique()
 
 # Create a DataFrame with all combinations of 'station' and 'datetime'
-all_combinations = pd.DataFrame(list(itertools.product(stations, datetimes)), columns=['STATION', 'DATE'])
+all_combinations = pd.DataFrame(list(itertools.product(dates, times)), columns=['DATE', 'TIME (UTC)'])
 
 # Merge with the original df to include all stations and all datetimes
 complete_combined = pd.merge(all_combinations, combined_all_stations, on=['STATION', 'DATE'], how='left')
@@ -247,7 +281,7 @@ df_sorted = df_sorted.reset_index(drop=True)
 #print(len(df_sorted))
 
 
-#df_sorted.to_excel('C:\\Users\\hp\\Desktop\\july test.xlsx', index=False)
+df_sorted.to_excel('C:\\Users\\hp\\Desktop\\july test.xlsx', index=False)
 
 
 
