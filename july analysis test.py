@@ -26,7 +26,7 @@ print('rows in date_df: ',len(date_df))
 #Define the start date, end date, and frequency
 start_time = '00:00:00'
 end_time = '23:45:00'
-frequency = '15T'
+frequency = '15min'
 
 #Create a datetime range
 time_range = pd.date_range(start=start_time, end=end_time, freq=frequency).strftime('%H:%M')
@@ -46,7 +46,7 @@ print('rows in time_df: ',len(time_df))
 
 
 
-
+#exit()
 
 
 
@@ -65,6 +65,11 @@ all_combinations = pd.DataFrame(list(itertools.product(dates, times)), columns=[
 
 
 print(len(all_combinations))
+
+
+exit()
+
+
 
 
 
