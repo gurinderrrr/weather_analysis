@@ -188,7 +188,7 @@ combine_tday_mh.columns =combine_tday_mh.columns.str.replace('DATE(YYYY-MM-DD)',
 combine_tday_mh.columns =combine_tday_mh.columns.str.replace('RAIN FALL CUM. SINCE 0300 UTC (mm)', 'RF',regex=False)
 
 
-combine_tday_mh['DATETIME'] = pd.to_datetime(combine_tday_mh['DATE'] + ' ' + combine_tday_mh['TIME (UTC)'])
+combine_tday_mh['DATETIME (UTC)'] = pd.to_datetime(combine_tday_mh['DATE'] + ' ' + combine_tday_mh['TIME (UTC)'])
 
 combine_tday_mh = combine_tday_mh.drop(columns=['DATE', 'TIME (UTC)'])
 
@@ -199,10 +199,11 @@ combined_all_stations = all_stations_df.merge(combine_tday_mh, on='STATION', how
 
 
 print(combined_all_stations['STATION'].nunique())
-print(combined_all_stations['DATETIME'].nunique())
+print(combined_all_stations['DATETIME (UTC)'].nunique())
 
+combined_all_stations.to_excel('C:\\Users\\hp\\Desktop\\july test.xlsx', index=False)
 
-#exit()
+exit()
 
 
 
@@ -234,6 +235,9 @@ date_range = pd.date_range(start=start_date, end=end_date, freq=frequency).strft
 
 # Create a DataFrame with the datetime range
 date_df = pd.DataFrame(date_range, columns=['DATE'])
+
+print(date_df.info())
+exit()
 
 #print(date_df)
 print('rows in date_df: ',len(date_df))
