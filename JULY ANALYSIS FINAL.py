@@ -27,9 +27,9 @@ import matplotlib.patches as mpatches
 from matplotlib.animation import FuncAnimation, FFMpegWriter
 import shapely
 
-df=pd.read_excel('C:\\Users\\hp\\Desktop\\july datetime test.xlsx')
+df=pd.read_excel('C:\\Users\\hp\\Desktop\\july datetime 1H test.xlsx')
 
-
+df = df.dropna(subset=['RF'])
 
 def map_lat(row):
     station_to_lat = {
@@ -449,7 +449,7 @@ ani = animation.FuncAnimation(
 )
 
 # Save the animation as a GIF file
-output_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\rainfall_animation.gif'
+output_path = 'C:\\Users\\hp\\Desktop\\gurinder\\python test\\rainfall_1H_animation.gif'
 ani.save(output_path, writer=PillowWriter(fps=2))  # Use PillowWriter to save as GIF
 
 plt.show()

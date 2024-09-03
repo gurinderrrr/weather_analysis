@@ -12,8 +12,8 @@ combined_all_stations=pd.read_excel('C:\\Users\\hp\\Desktop\\july test.xlsx')
 
 #Define the start date, end date, and frequency
 start_datetime = '2024-07-01 00:00:00'
-end_datetime = '2024-07-31 23:00:00'
-frequency = '1H'
+end_datetime = '2024-07-31 23:45:00'
+frequency = '2H'
 
 #Create a datetime range
 datetime_range = pd.date_range(start=start_datetime, end=end_datetime, freq=frequency)
@@ -44,7 +44,7 @@ combinations = stations_unique.merge(datetime_unique, how='cross')
 # Step 2: Merge with the original DataFrame to bring in the rainfall data
 result = combinations.merge(combined_all_stations, on=['STATION', 'DATETIME (UTC)'], how='left')
 
-result.to_excel('C:\\Users\\hp\\Desktop\\july datetime test.xlsx', index=False)
+result.to_excel('C:\\Users\\hp\\Desktop\\july datetime 2H test.xlsx', index=False)
 
 
 #print(datetime_df)

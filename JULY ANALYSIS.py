@@ -180,12 +180,32 @@ combine_tday_mh.drop(mah_drop_today, inplace=True)
 
 
                         #choose columns to include in combine_tday_mh
-combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)']]
+combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP. (\'C)','WIND DIR 10 m (Deg)','WIND SPEED 10 m (Kt)','RH (%)','MSLP (hPa / gpm)','SLP (hPa)']]
 
 
                        #replace names
 combine_tday_mh.columns =combine_tday_mh.columns.str.replace('DATE(YYYY-MM-DD)', 'DATE',regex=False)
 combine_tday_mh.columns =combine_tday_mh.columns.str.replace('RAIN FALL CUM. SINCE 0300 UTC (mm)', 'RF',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('TEMP. (\'C)', 'TEMP',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('WIND DIR 10 m (Deg)', 'WIND DIR (Deg)',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('WIND SPEED 10 m (Kt)', 'WIND SPEED (Kt)',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('SLP (hPa)', 'SLP',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 combine_tday_mh['DATETIME (UTC)'] = pd.to_datetime(combine_tday_mh['DATE'] + ' ' + combine_tday_mh['TIME (UTC)'])
