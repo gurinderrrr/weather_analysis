@@ -29,7 +29,15 @@ import shapely
 
 df=pd.read_excel('C:\\Users\\hp\\Desktop\\july datetime 1H test.xlsx')
 
-df = df.dropna(subset=['RF'])
+print(len(df))
+#exit()
+
+df.dropna(subset=['RF'], inplace=True)
+
+print(len(df))
+
+#df.to_excel('C:\\Users\\hp\\Desktop\\gurinder\\python test\\rainfall_1Htest_animation.xlsx')
+#exit()
 
 def map_lat(row):
     station_to_lat = {
@@ -419,6 +427,13 @@ ax.axis('off')
 # Plot the shapefile boundaries
 gdf.plot(ax=ax, color='none', edgecolor='black')
 
+# Filter out data points with missing or zero rainfall
+#date_data = df[(df['DATETIME (UTC)'] == date) & (df['RF'] > 0)]
+
+#colors = [get_custom_color(rf) for rf in date_data['RF']]
+#print(colors)
+
+#exit()
 # Function to update the plot for each frame
 def update(date):
     ax.clear()
@@ -426,7 +441,8 @@ def update(date):
     gdf.plot(ax=ax, color='none', edgecolor='black')
 
     # Filter out data points with missing or zero rainfall
-    date_data = df[(df['DATETIME (UTC)'] == date) & (df['RF'] > 0)]
+    date_data = df[(df['DATETIME (UTC)'] == date) & (df['RF'] > 1)]
+
     
     # Scatter plot with filled circles
     ax.scatter(
