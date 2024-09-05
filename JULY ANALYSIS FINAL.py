@@ -420,12 +420,27 @@ def get_custom_color(rf):
         return 'white'
 
 # Set up the figure and axis
-fig, ax = plt.subplots(figsize=(22, 15))  # Keep your desired figure size
+fig, ax = plt.subplots(figsize=(16, 8))  # Keep your desired figure size
 # Remove the axes
 ax.axis('off')
 
 # Plot the shapefile boundaries
-gdf.plot(ax=ax, color='none', edgecolor='black')
+gdf.plot(ax=ax, color='none', edgecolor='black', aspect='auto')
+
+# Get the bounding box of the shapefile
+minx, miny, maxx, maxy = gdf.total_bounds
+
+# Set the axis limits to the shapefile bounds
+ax.set_xlim(minx, maxx)
+ax.set_ylim(miny, maxy)
+
+# Remove the axes and fill the plot area entirely
+ax.set_aspect('auto')  # Free aspect ratio
+ax.set_position([0, 0, 1, 0.95])  # Fill the entire figure space
+ax.axis('off')  # Turn off the axis
+
+#plt.show()
+#exit()
 
 # Filter out data points with missing or zero rainfall
 #date_data = df[(df['DATETIME (UTC)'] == date) & (df['RF'] > 0)]
@@ -438,6 +453,9 @@ gdf.plot(ax=ax, color='none', edgecolor='black')
 def update(date):
     ax.clear()
     ax.axis('off')  # Ensure the axes remain off after clearing
+    ax.set_aspect('auto')  # Free aspect ratio
+    ax.set_xlim(minx, maxx)  # Set the limits again
+    ax.set_ylim(miny, maxy)  # Set the limits again
     gdf.plot(ax=ax, color='none', edgecolor='black')
 
     # Filter out data points with missing or zero rainfall
@@ -457,6 +475,7 @@ def update(date):
     )
 
     ax.set_title(f"Rainfall on {date}")
+
 
 # Create the animation
 dates = df['DATETIME (UTC)'].unique()
