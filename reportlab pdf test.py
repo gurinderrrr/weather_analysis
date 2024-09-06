@@ -689,7 +689,14 @@ print('Filtering data done.')
 # Function to convert dataframe to PDF
 def df_to_pdf(df, pdf_filename):
     # Create a PDF document
-    pdf = SimpleDocTemplate(pdf_filename, pagesize=letter)
+    pdf = SimpleDocTemplate(
+        pdf_filename, 
+        pagesize=letter,
+        leftMargin=10,   # Set left margin (default is 72)
+        rightMargin=10,  # Set right margin (default is 72)
+        topMargin=5,    # Set top margin (default is 72)
+        bottomMargin=5  # Set bottom margin (default is 72)
+    )
     
     # Convert the dataframe to a list of lists (including headers)
     data_list = [df.columns.to_list()] + df.values.tolist()
@@ -704,7 +711,7 @@ def df_to_pdf(df, pdf_filename):
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Center align all columns
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Bold font for header
         ('FONTSIZE', (0, 0), (-1, -1), 10),  # Font size for all cells
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Padding for header
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),  # Padding for header
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),  # Background color for rows
         ('GRID', (0, 0), (-1, -1), 1, colors.black),  # Add grid lines
     ])
@@ -716,4 +723,4 @@ def df_to_pdf(df, pdf_filename):
     pdf.build(elements)
 
 # Save dataframe as PDF
-df_to_pdf(df, "output.pdf")
+df_to_pdf(df, "C:\\Users\\hp\\Desktop\\report lab test.pdf")
