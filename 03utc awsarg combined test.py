@@ -330,11 +330,19 @@ combine_tday_03_mh.drop(mah_drop_03_today, inplace=True)
 
 
                         #choose columns to include in combine_tday_mh
-combine_tday_03_mh=combine_tday_03_mh[['STATION','TEMP DAY MIN. (\'C)']]
+combine_tday_03_mh=combine_tday_03_mh[['STATION','TEMP DAY MIN. (\'C)','TEMP. (\'C)','WIND DIR 10 m (Deg)','WIND SPEED 10 m (Kt)','WIND SPEED MAX / GUST 10 m (Kt)','RH (%)','MSLP (hPa / gpm)','SLP (hPa)','BATTERY (Volts)','GPS']]
 
 
                        #replace names
 combine_tday_03_mh.columns =combine_tday_03_mh.columns.str.replace('TEMP DAY MIN. (\'C)', 'MIN T',regex=False)
+combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('TEMP. (\'C)', 'TEMP',regex=False)
+combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('WIND DIR 10 m (Deg)', 'WIND DIR (Deg)',regex=False)
+combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('WIND SPEED 10 m (Kt)', 'WIND SPEED (Kt)',regex=False)
+combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('WIND SPEED MAX / GUST 10 m (Kt)', 'GUST (Kt)',regex=False)
+combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('SLP (hPa)', 'SLP',regex=False)
+combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
+combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('BATTERY (Volts)', 'BAT',regex=False)
+combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
 
 
 
@@ -655,6 +663,17 @@ arg_df_tot=len(arg_mh)
 arg_df_rep=len(arg_mh)-len(df[(df['AWS/ARG'] == 'ARG') & (df['null'] == 3)])
 
 
+df=df.drop('null', axis=1)
+
+# Reorder columns as needed
+df = df[['S.No.','DISTRICT', 'STATIONS','AWS/ARG','RF', 'MIN T', 'MAX T', 'TEMP', 'WIND DIR (Deg)','WIND SPEED (Kt)','GUST (Kt)', 'RH (%)','SLP','MSLP', 'BAT', 'GPS']]
+# Convert rainfall column to numeric, forcing errors to NaN
+#df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
+
+
+
+
+
 
 df_pg_hd_mh=pd.DataFrame(['STATE: MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC)'])
 df_rf_leg_head_mh=pd.DataFrame({'':['LEGENDS']})
@@ -663,14 +682,7 @@ df_rf_leg_col_mh=pd.DataFrame({'':['','Lowest Temp','','','','','Highest Temp','
 awsarg_df_sum_data_mh= pd.DataFrame([["Total AWS/AGRO stations working"],['Total AWS/AGRO stations reporting'],['Total ARG stations working'],['Total ARG stations reporting']])
 awsarg_df_sum_val_mh= pd.DataFrame([[df_tot],[df_rep],[arg_df_tot],[arg_df_rep]])
 
-df=df.drop('null', axis=1)
 
-
-
-# Reorder columns as needed
-df = df[['S.No.','DISTRICT','STATIONS','AWS/ARG','RF','MIN T','MAX T']]
-# Convert rainfall column to numeric, forcing errors to NaN
-#df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
 
 
 

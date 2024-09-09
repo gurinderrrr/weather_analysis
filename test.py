@@ -2,24 +2,15 @@ import pandas as pd
 
 # Sample DataFrames (Replace with your actual DataFrames)
 df_pg_hd_mh = pd.DataFrame(['STATE: MAHARASHTRA (09-09-2024 3UTC to 10-09-2024 3UTC)'])
-df_rf_leg_head_mh = pd.DataFrame({'':['LEGENDS']})
-df_rf_leg_mh = pd.DataFrame({'':['Not Reported', '1mm <= RF <= 2.4mm/\nLowest Temp', '2.5mm <= RF <= 15.5mm',
-                                 '15.6mm <= RF <= 64.4mm', '64.5mm <= RF <= 115.5mm', '115.6mm <= RF <= 204.4mm',
-                                 'RF > 204.4/\nHighest Temp', 'Error Values']})
-df_rf_leg_col_mh = pd.DataFrame({'':['', 'Lowest Temp', '', '', '', '', 'Highest Temp', 'Error Value']})
-awsarg_df_sum_data_mh = pd.DataFrame([["Total AWS/AGRO stations working"], ['Total AWS/AGRO stations reporting'],
-                                      ['Total ARG stations working'], ['Total ARG stations reporting']])
+
+awsarg_df_sum_data_mh = pd.DataFrame([[f"Total AWS/AGRO stations working= {23}"], ['Total AWS/AGRO stations reporting'],['Total ARG stations working'], ['Total ARG stations reporting']])
 awsarg_df_sum_val_mh = pd.DataFrame([[10], [8], [5], [3]])  # Sample values for total stations reporting
 
-# Function to convert a DataFrame to HTML
-def df_to_html(df,header=False, index=False, border=True):
-    return df.style\
-        .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid',
-                           'text-align': "center", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
-        .set_table_styles([{
-        'selector': 'th',
-        'props': [('border', '1pt solid')]}])\
-        .hide(axis='index').to_html()
+
+# Function to convert DataFrame to HTML with custom alignment, excluding header and index
+def df_to_html(df, text_align='center'):
+    return df.to_html(header=False, index=False, border=1)\
+        .replace('<table', f'<table style="text-align: {text_align}"')  # Custom text alignment per table
 
 # Combine the HTML for all DataFrames
 html_string = f'''
@@ -48,19 +39,11 @@ html_string = f'''
 <body>
 
 
-{df_to_html(df_pg_hd_mh)}
+{df_to_html(df_pg_hd_mh, text_align='center')}
 
 
-{df_to_html(df_rf_leg_head_mh)}
 
-
-{df_to_html(df_rf_leg_mh)}
-
-
-{df_to_html(df_rf_leg_col_mh)}
-
-
-{df_to_html(awsarg_df_sum_data_mh)}
+{df_to_html(awsarg_df_sum_data_mh, text_align='center')}
 
 
 {df_to_html(awsarg_df_sum_val_mh)}
