@@ -666,8 +666,149 @@ awsarg_df_sum_val_mh= pd.DataFrame([[df_tot],[df_rep],[arg_df_tot],[arg_df_rep]]
 df=df.drop('null', axis=1)
 
 
+
 # Reorder columns as needed
 df = df[['S.No.','DISTRICT','STATIONS','AWS/ARG','RF','MIN T','MAX T']]
+# Convert rainfall column to numeric, forcing errors to NaN
+#df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
+
+
+
+
+# Define your styling functions
+def highlight_max(s):
+    is_max = s == s.max()
+    return ['background-color: red; font-weight: bold' if v else '' for v in is_max]
+
+def highlight_min(s):
+    is_min = s == s.min()
+    return ['background-color: #98FB98; font-weight: bold' if v else '' for v in is_min]
+
+def neg_val(val):
+    if val < 0:
+        return 'background-color: black; color: white; font-weight: bold'
+    else:
+        return ''
+
+def color_range(val):
+    if isinstance(val, str):
+        rf_value = float(val.split('\n')[0])  # Extract RF value from RF_with_datetime
+    else:
+        rf_value = val  # Directly use the value if it's not a string (e.g., float or NaN)
+
+    if pd.isna(rf_value):  # Handle NaN values
+        return ''
+    elif rf_value % 22.5 == 0 and rf_value>0 :  # if not multiple of 0.5
+         return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
+    elif 1 <= rf_value <= 2.4:  # lr
+        return 'background-color: #ADFF2F; font-weight: bold'
+    elif 2.5 <= rf_value <= 15.5:  # mr
+        return 'background-color: #00FF00; font-weight: bold'
+    elif 15.6 <= rf_value <= 64.4:  # hr
+        return 'background-color: #00FFFF; font-weight: bold'
+    elif 64.5 <= rf_value <= 115.5:  # vhr
+        return 'background-color: #FFFF00; font-weight: bold'
+    elif 115.6 <= rf_value <= 204.4:  # vhr
+        return 'background-color: #FFA500; font-weight: bold'
+    elif rf_value > 204.4:  # ehr
+        return 'background-color: #FF0000; font-weight: bold'
+    else:
+        return ''
+
+
+
+
+
+
+
+
+# Apply CSS to ensure word wrapping in the HTML output
+styled_df = df.style\
+        .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid',
+                           'text-align': "center", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
+        .set_table_styles([{
+        'selector': 'th',
+        'props': [('border', '1pt solid')]}])\
+        .apply(highlight_max, subset=['MAX T'])\
+        .apply(highlight_min, subset=['MIN T'])\
+        .map(neg_val, subset=['MIN T', 'MAX T'])\
+        .map(color_range, subset=['RF'])\
+        .hide(axis='index')  # Hide the index
+
+# Export to HTML with consistent data format
+html_file = 'wrapped_table.html'
+styled_df.format(precision=1, na_rep="").to_html(html_file)
+
+
+
+
+import pdfkit
+
+# Convert HTML file to PDF
+pdf_file = 'styled_rainfall_with_borders.pdf'
+pdfkit.from_file(html_file, pdf_file)
+
+
+
+exit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Custom function to style the DataFrame
+def circle_multiples_of_half(val):
+    if val % 0.5 == 0:
+        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
+    else:
+        return ''
+
+# Apply the style
+styled_df = df.style.map(circle_multiples_of_half, subset=['RF'])
+
+# Define additional styles for table borders
+border_style = """
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+"""
+
+# Save the styled DataFrame as an HTML file with borders
+html_file = 'styled_rainfall_with_borders.html'
+with open(html_file, 'w') as f:
+    f.write(border_style)  # Write the CSS for borders
+    f.write(styled_df.to_html())  # Write the styled DataFrame HTML
+
+exit()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 print('Filtering data done.')
@@ -724,7 +865,9 @@ def color_range(val):
 
     if pd.isna(rf_value):  # Handle NaN values
         return ''
-    elif rf_value % 0.5 != 0:  # if not multiple of 0.5
+    elif rf_value % 0.5 == 0:
+        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
+    #elif rf_value % 0.5 != 0:  # if not multiple of 0.5
         return 'background-color: black; color: white; font-weight: bold'
     elif 1 <= rf_value <= 2.4:  # lr
         return 'background-color: #ADFF2F; font-weight: bold'
@@ -787,6 +930,21 @@ with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
     border_format = workbook.add_format({'border':1,})
     worksheet.conditional_format('B3:C3', {'type': 'no_blanks','format': border_format})
     worksheet.conditional_format('B3:C3', {'type': 'blanks','format': border_format})
+
+
+        # Define a red diagonal border format
+    diagonal_format = workbook.add_format({
+        'diag_type': 1,           # Diagonal up from bottom-left to top-right
+        'diag_color': 'red',
+        'border': 1,
+        'border_color': 'black'    # Regular cell border
+    })
+
+    # Loop through the DataFrame and apply the diagonal format
+    for row_num, value in enumerate(df['RF'], start=18):
+        if pd.notna(value) and  value % 0.5 == 0:
+            # Apply diagonal border format to the cell
+            worksheet.write(row_num, 4, value, diagonal_format)  # Column B (rainfall column)
    
 
     df_pg_hd_mh.style.set_properties(**{'font-family':"Arial Rounded MT Bold",'font-size':'18pt','font-weight':'bold', 'text-align':"left"})\
@@ -823,10 +981,13 @@ with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
     # Apply the wrap format to the entire column (assuming the last column RF_with_datetime)
     worksheet.set_column('E:E', 12, wrap_format)
 
+    
+
 
 print('Excel file created for Maharashtra')
 
-print('Creating pdf file for office copy...')
+
+print('Creating pdf file...')
 
 
 
@@ -859,23 +1020,57 @@ sheets.Close(True)
 excel.Quit()
 del excel
 
-
 print('pdf file created for Maharashtra.')
 
+exit()
 
 
 
-print('Creating pdf file for office copy...')
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+print('Creating Excel File for office copy...')
 
 
 # Define Excel export path
-excel_path = os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx')
+excel_path = os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC) office copy.xlsx')
 
 # Export to Excel with styling
 with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
     
-    styled_df.to_excel(writer, sheet_name="MAHARASHTRA",startrow=l, startcol=0, index=False)
+    df.to_excel(writer, sheet_name="MAHARASHTRA",startrow=l, startcol=0, index=False)
 
     workbook = writer.book
     worksheet = writer.sheets["MAHARASHTRA"]
@@ -891,18 +1086,11 @@ with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
 
     df_pg_hd_mh.style.set_properties(**{'font-family':"Arial Rounded MT Bold",'font-size':'18pt','font-weight':'bold', 'text-align':"left"})\
                   .to_excel(writer,sheet_name="MAHARASHTRA",header=False,index=False,startrow=0, startcol=1, engine='xlsxwriter')
-    df_rf_leg_head_mh.style.set_properties(**{'font-family':"Calibri",'font-size':'14pt','font-weight':'bold', 'text-align':"center"})\
-                   .to_excel(writer,sheet_name="MAHARASHTRA",index=False,header=False,startrow=2, startcol=1, engine='xlsxwriter')
-    df_rf_leg_mh.style.set_properties(**{'font-family':"Calibri",'font-size':'12pt','font-weight':'bold', 'text-align':"center",'border':'1pt solid'})\
-                   .to_excel(writer,sheet_name="MAHARASHTRA",index=False,header=False,startrow=3, startcol=1, engine='xlsxwriter')
-    df_rf_leg_col_mh.style.set_properties(**{'font-family':"Calibri",'font-size':'12pt','font-weight':'bold', 'text-align':"center",'border':'1pt solid'})\
-                    .apply(highlight_single_cells, axis=None)\
-                   .to_excel(writer,sheet_name="MAHARASHTRA",index=False,header=False,startrow=3, startcol=2, engine='xlsxwriter')
    
     awsarg_df_sum_data_mh.style.set_properties(**{'font-family':"Calibri",'font-size':'9pt','font-weight':'bold', 'align':"center",'border':'1pt solid'})\
-                     .to_excel(writer,sheet_name="MAHARASHTRA",header=False,index=False,startrow=12, startcol=1, engine='xlsxwriter')
+                     .to_excel(writer,sheet_name="MAHARASHTRA",header=False,index=False,startrow=2, startcol=1, engine='xlsxwriter')
     awsarg_df_sum_val_mh.style.set_properties(**{'font-family':"Calibri",'font-size':'9pt', 'text-align':"center",'font-weight':'bold', 'border':'1pt solid'})\
-                    .to_excel(writer,sheet_name="MAHARASHTRA",header=False,index=False,startrow=12, startcol=2, engine='xlsxwriter')
+                    .to_excel(writer,sheet_name="MAHARASHTRA",header=False,index=False,startrow=2, startcol=2, engine='xlsxwriter')
 
 
 
@@ -923,6 +1111,11 @@ with pd.ExcelWriter(excel_path, engine='xlsxwriter') as writer:
     # Apply the wrap format to the entire column (assuming the last column RF_with_datetime)
     worksheet.set_column('E:E', 12, wrap_format)
 
+print('Excel file created for office copy...')
+
+
+print('Creating pdf file for office copy...')
+
 
 # Import Module
 from win32com import client
@@ -931,10 +1124,10 @@ from win32com import client
 excel = client.Dispatch("Excel.Application")
 
 # Read Excel File
-sheets = excel.Workbooks.Open(os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
+sheets = excel.Workbooks.Open(os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC) office copy.xlsx'))
 ws = sheets.Worksheets[0]
 
-sheets.Worksheets[0].PageSetup.Zoom = 80
+sheets.Worksheets[0].PageSetup.Zoom = 48
 sheets.Worksheets[0].PageSetup.FitToPagesTall = False
 sheets.Worksheets[0].PageSetup.FitToPagesWide = False
 #sheets.Worksheets[0].PageSetup.PrintArea = 'A1:M60'
@@ -951,7 +1144,7 @@ sheets.Close(True)
 excel.Quit()
 del excel
 
-#os.remove(os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC).xlsx'))
+os.remove(os.path.join(today_folder_path,'MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC) office copy.xlsx'))
 
 
 
