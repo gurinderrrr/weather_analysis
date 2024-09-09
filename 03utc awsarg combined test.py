@@ -599,7 +599,7 @@ def check_aws(station):
         return 'ARG'
 
 # Apply the function to create the new column
-df['AWS/ARG'] = df['STATIONS'].apply(check_aws)
+df['TYPE'] = df['STATIONS'].apply(check_aws)
 
 
    
@@ -641,7 +641,7 @@ df['MAX T'] = df['MAX T'].astype(np.float64)
 
 
 
-df['DATETIME'] = df['DATETIME'].dt.strftime('(Upto'+'\n'+'%d-%m-%Y'+'\n'+'%H:%M UTC)')
+df['DATETIME'] = df['DATETIME'].dt.strftime('(%H:%M)')
 
 # Create a new column 'RF_with_datetime'
 df['RF_with_datetime'] = df.apply(lambda row: f"{row['RF']}\n{row['DATETIME']}" if not pd.isna(row['DATETIME']) else row['RF'], axis=1)
@@ -658,15 +658,15 @@ df.columns =df.columns.str.replace('RF_with_datetime', 'RF',regex=False)
 df['null']=df.isna().sum(axis=1)
 
 df_tot=len(aws_mh)
-df_rep=len(aws_mh)-len(df[(df['AWS/ARG'] == 'AWS') & (df['null'] == 3)])
+df_rep=len(aws_mh)-len(df[(df['TYPE'] == 'AWS') & (df['null'] == 3)])
 arg_df_tot=len(arg_mh)
-arg_df_rep=len(arg_mh)-len(df[(df['AWS/ARG'] == 'ARG') & (df['null'] == 3)])
+arg_df_rep=len(arg_mh)-len(df[(df['TYPE'] == 'ARG') & (df['null'] == 3)])
 
 
 df=df.drop('null', axis=1)
 
 # Reorder columns as needed
-df = df[['S.No.','DISTRICT', 'STATIONS','AWS/ARG','RF', 'MIN T', 'MAX T', 'TEMP', 'WIND DIR (Deg)','WIND SPEED (Kt)','GUST (Kt)', 'RH (%)','SLP','MSLP', 'BAT', 'GPS']]
+df = df[['S.No.','DISTRICT', 'STATIONS','TYPE','RF', 'MIN T', 'MAX T', 'TEMP', 'WIND DIR (Deg)','WIND SPEED (Kt)','GUST (Kt)', 'RH (%)','SLP','MSLP', 'BAT', 'GPS']]
 # Convert rainfall column to numeric, forcing errors to NaN
 #df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
 
@@ -688,17 +688,17 @@ awsarg_df_sum_val_mh= pd.DataFrame([[df_tot],[df_rep],[arg_df_tot],[arg_df_rep]]
 
 
 # Define your styling functions
-def highlight_max(s):
-    is_max = s == s.max()
-    return ['background-color: red; font-weight: bold' if v else '' for v in is_max]
+#def highlight_max(s):
+    #is_max = s == s.max()
+    #return ['background-color: red; font-weight: bold' if v else '' for v in is_max]
 
-def highlight_min(s):
-    is_min = s == s.min()
-    return ['background-color: #98FB98; font-weight: bold' if v else '' for v in is_min]
+#def highlight_min(s):
+    #is_min = s == s.min()
+    #return ['background-color: #98FB98; font-weight: bold' if v else '' for v in is_min]
 
 def neg_val(val):
     if val < 0:
-        return 'background-color: black; color: white; font-weight: bold'
+        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
     else:
         return ''
 
@@ -710,20 +710,32 @@ def color_range(val):
 
     if pd.isna(rf_value):  # Handle NaN values
         return ''
-    elif rf_value % 22.5 == 0 and rf_value>0 :  # if not multiple of 0.5
+    elif rf_value % 0.5 != 0 :  # if not multiple of 0.5
          return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
-    elif 1 <= rf_value <= 2.4:  # lr
-        return 'background-color: #ADFF2F; font-weight: bold'
-    elif 2.5 <= rf_value <= 15.5:  # mr
-        return 'background-color: #00FF00; font-weight: bold'
-    elif 15.6 <= rf_value <= 64.4:  # hr
-        return 'background-color: #00FFFF; font-weight: bold'
-    elif 64.5 <= rf_value <= 115.5:  # vhr
-        return 'background-color: #FFFF00; font-weight: bold'
-    elif 115.6 <= rf_value <= 204.4:  # vhr
-        return 'background-color: #FFA500; font-weight: bold'
-    elif rf_value > 204.4:  # ehr
-        return 'background-color: #FF0000; font-weight: bold'
+    #elif 1 <= rf_value <= 2.4:  # lr
+       # return 'background-color: #ADFF2F; font-weight: bold'
+    #elif 2.5 <= rf_value <= 15.5:  # mr
+       # return 'background-color: #00FF00; font-weight: bold'
+   # elif 15.6 <= rf_value <= 64.4:  # hr
+   #     return 'background-color: #00FFFF; font-weight: bold'
+    #elif 64.5 <= rf_value <= 115.5:  # vhr
+    #    return 'background-color: #FFFF00; font-weight: bold'
+   # elif 115.6 <= rf_value <= 204.4:  # vhr
+    #    return 'background-color: #FFA500; font-weight: bold'
+   # elif rf_value > 204.4:  # ehr
+    #    return 'background-color: #FF0000; font-weight: bold'
+    else:
+        return ''
+    
+def bat_val(val):
+    if val < 11:
+        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
+    else:
+        return ''
+    
+def gps_val(val):
+    if val =="U":
+        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
     else:
         return ''
 
@@ -736,16 +748,19 @@ def color_range(val):
 
 # Apply CSS to ensure word wrapping in the HTML output
 styled_df = df.style\
-        .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid',
-                           'text-align': "center", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
+        .set_properties(**{'font-family': "Calibri", 'font-size': '18pt', 'border': '1pt solid',
+                           'text-align': "left", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
         .set_table_styles([{
         'selector': 'th',
-        'props': [('border', '1pt solid')]}])\
-        .apply(highlight_max, subset=['MAX T'])\
-        .apply(highlight_min, subset=['MIN T'])\
+        'props': [('font-size', '16pt'), ('border', '1pt solid')]
+}])\
         .map(neg_val, subset=['MIN T', 'MAX T'])\
         .map(color_range, subset=['RF'])\
+        .map(bat_val, subset=['BAT'])\
+        .map(gps_val, subset=['GPS'])\
         .hide(axis='index')  # Hide the index
+#.apply(highlight_max, subset=['MAX T'])\
+#.apply(highlight_min, subset=['MIN T'])\
 
 # Export to HTML with consistent data format
 html_file = 'wrapped_table.html'
