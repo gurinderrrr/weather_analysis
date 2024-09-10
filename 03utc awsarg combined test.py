@@ -330,15 +330,14 @@ combine_tday_03_mh.drop(mah_drop_03_today, inplace=True)
 
 
                         #choose columns to include in combine_tday_mh
-combine_tday_03_mh=combine_tday_03_mh[['STATION','TEMP DAY MIN. (\'C)','TEMP. (\'C)','WIND DIR 10 m (Deg)','WIND SPEED 10 m (Kt)','WIND SPEED MAX / GUST 10 m (Kt)','RH (%)','MSLP (hPa / gpm)','SLP (hPa)','BATTERY (Volts)','GPS']]
+combine_tday_03_mh=combine_tday_03_mh[['STATION','TEMP DAY MIN. (\'C)','TEMP. (\'C)','WIND DIR 10 m (Deg)','WIND SPEED 10 m (Kt)','RH (%)','MSLP (hPa / gpm)','SLP (hPa)','BATTERY (Volts)','GPS']]
 
 
                        #replace names
 combine_tday_03_mh.columns =combine_tday_03_mh.columns.str.replace('TEMP DAY MIN. (\'C)', 'MIN T',regex=False)
 combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('TEMP. (\'C)', 'TEMP',regex=False)
-combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('WIND DIR 10 m (Deg)', 'WIND DIR (Deg)',regex=False)
-combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('WIND SPEED 10 m (Kt)', 'WIND SPEED (Kt)',regex=False)
-combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('WIND SPEED MAX / GUST 10 m (Kt)', 'GUST (Kt)',regex=False)
+combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('WIND DIR 10 m (Deg)', 'WD',regex=False)
+combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('WIND SPEED 10 m (Kt)', 'WS',regex=False)
 combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('SLP (hPa)', 'SLP',regex=False)
 combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
 combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('BATTERY (Volts)', 'BAT',regex=False)
@@ -654,6 +653,24 @@ df=df.drop('DATETIME', axis=1)
 df.columns =df.columns.str.replace('RF_with_datetime', 'RF',regex=False)
 
 
+# Create a new column 'RF_with_datetime'
+df['station_with_district'] = df.apply(
+    lambda row: f"{row['STATIONS']} (<b>{row['DISTRICT']}</b>)" if not pd.isna(row['DISTRICT']) else row['STATIONS'],
+    axis=1
+)
+
+
+#df=df.drop('null', axis=1)
+df=df.drop('STATIONS', axis=1)
+df=df.drop('DISTRICT', axis=1)
+
+df.columns =df.columns.str.replace('station_with_district', 'STATIONS',regex=False)
+
+
+
+
+
+
 
 df['null']=df.isna().sum(axis=1)
 
@@ -666,7 +683,7 @@ arg_df_rep=len(arg_mh)-len(df[(df['TYPE'] == 'ARG') & (df['null'] == 3)])
 df=df.drop('null', axis=1)
 
 # Reorder columns as needed
-df = df[['S.No.','DISTRICT', 'STATIONS','TYPE','RF', 'MIN T', 'MAX T', 'TEMP', 'WIND DIR (Deg)','WIND SPEED (Kt)','GUST (Kt)', 'RH (%)','SLP','MSLP', 'BAT', 'GPS']]
+df = df[['S.No.','STATIONS','TYPE','RF', 'MIN T', 'MAX T', 'TEMP', 'WD','WS','RH (%)','SLP','MSLP', 'BAT', 'GPS']]
 # Convert rainfall column to numeric, forcing errors to NaN
 #df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
 
@@ -697,21 +714,37 @@ awsarg_df_sum_val_mh= pd.DataFrame([[df_tot],[df_rep],[arg_df_tot],[arg_df_rep]]
     #return ['background-color: #98FB98; font-weight: bold' if v else '' for v in is_min]
 
 def neg_val(val):
-    if val < 0:
+    try:
+        # Attempt to convert the value to a numeric type
+        numeric_val = float(val)
+    except ValueError:
+        # If conversion fails, treat the value as non-numeric
+        return ''
+    
+    # Apply the styling only if the value is numeric and less than 0
+    if numeric_val < 0:
         return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
     else:
         return ''
 
 def color_range(val):
-    if isinstance(val, str):
-        rf_value = float(val.split('\n')[0])  # Extract RF value from RF_with_datetime
-    else:
-        rf_value = val  # Directly use the value if it's not a string (e.g., float or NaN)
-
+    try:
+        # Extract the numeric value from the string, or use the value directly if it's numeric
+        if isinstance(val, str):
+            # Attempt to split the string and convert the first part to a float
+            rf_value = float(val.split('\n')[0])
+        else:
+            # Use the value directly if it's already a numeric type
+            rf_value = float(val)
+    except (ValueError, IndexError):
+        # If conversion fails or splitting does not work, handle it gracefully
+        return ''
+    
+    # Apply styling based on the value range
     if pd.isna(rf_value):  # Handle NaN values
         return ''
-    elif rf_value % 0.5 != 0 :  # if not multiple of 0.5
-         return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
+    elif rf_value % 0.5 != 0:  # if not a multiple of 0.5
+        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
     #elif 1 <= rf_value <= 2.4:  # lr
        # return 'background-color: #ADFF2F; font-weight: bold'
     #elif 2.5 <= rf_value <= 15.5:  # mr
@@ -728,7 +761,15 @@ def color_range(val):
         return ''
     
 def bat_val(val):
-    if val < 11:
+    try:
+        # Convert val to a numeric type
+        numeric_val = float(val)
+    except (ValueError, TypeError):
+        # If conversion fails, return no styling
+        return ''
+    
+    # Apply styling if the value is less than 11
+    if numeric_val < 11:
         return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
     else:
         return ''
@@ -741,35 +782,121 @@ def gps_val(val):
 
 
 
+#df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
+df['TEMP'] = pd.to_numeric(df['TEMP'], errors='coerce')
+df['MIN T'] = pd.to_numeric(df['MIN T'], errors='coerce')
+df['MAX T'] = pd.to_numeric(df['MAX T'], errors='coerce')
+df['WD'] = pd.to_numeric(df['WD'], errors='coerce')
+df['WS'] = pd.to_numeric(df['WS'], errors='coerce')
+df['RH (%)'] = pd.to_numeric(df['RH (%)'], errors='coerce')
+df['SLP'] = pd.to_numeric(df['SLP'], errors='coerce')
+df['MSLP'] = pd.to_numeric(df['MSLP'], errors='coerce')
+df['BAT'] = pd.to_numeric(df['BAT'], errors='coerce')
+
+# Function to restructure DataFrame
+#def restructure_stations(df):
+    #restructured_data = []
+    #for district, group in df.groupby('DISTRICT'):
+    #    restructured_data.append([f"<b>{district}</b>"])  # Add district in bold
+     #   restructured_data.extend(group[['STATIONS']].values.tolist())  # Add stations
+   # 
+   # return pd.DataFrame(restructured_data, columns=['STATIONS'])
+
+#df_restructured = restructure_stations(df)
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+#def style_stations(df):
 # Apply CSS to ensure word wrapping in the HTML output
-styled_df = df.style\
-        .set_properties(**{'font-family': "Calibri", 'font-size': '18pt', 'border': '1pt solid',
-                           'text-align': "left", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
-        .set_table_styles([{
-        'selector': 'th',
-        'props': [('font-size', '16pt'), ('border', '1pt solid')]
-}])\
-        .map(neg_val, subset=['MIN T', 'MAX T'])\
-        .map(color_range, subset=['RF'])\
-        .map(bat_val, subset=['BAT'])\
-        .map(gps_val, subset=['GPS'])\
-        .hide(axis='index')  # Hide the index
+styled_df= df.style\
+            .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid',
+                            'text-align': "center", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
+            .set_table_styles([
+        {
+            'selector': 'th',  # Selects the header (th element)
+            'props': [('border', '1pt solid black')]  # Apply border style
+        }
+    ])\
+            .map(neg_val, subset=['MIN T', 'MAX T'])\
+            .map(color_range, subset=['RF'])\
+            .map(bat_val, subset=['BAT'])\
+            .map(gps_val, subset=['GPS'])\
+            .map(lambda x: 'font-weight: bold;' if '<b>' in str(x) else '')\
+            .hide(axis='index')  # Hide the index
 #.apply(highlight_max, subset=['MAX T'])\
 #.apply(highlight_min, subset=['MIN T'])\
 
+#styled_df = style_stations(df)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Export to HTML with consistent data format
 html_file = 'wrapped_table.html'
-styled_df.format(precision=1, na_rep="").to_html(html_file)
+styled_df.format(precision=1, na_rep="").to_html(html_file, escape=False)
+
+
+
+
+
+
+# Manually add additional CSS for header styling
+html_content = ''
+with open(html_file, 'r') as file:
+    html_content = file.read()
+
+html_content = html_content.replace(
+    "<style type=\"text/css\">",
+    "<style type=\"text/css\"> th { font-size: 12pt; }"
+)
+
+# Save updated HTML
+with open(html_file, 'w') as file:
+    file.write(html_content)
+
+
+
 
 
 
 
 import pdfkit
+
+
+# Define options for the PDF including margin settings
+options = {
+    'margin-top': '1mm',
+    'margin-bottom': '1mm',
+    'margin-left': '5mm',
+    'margin-right': '5mm',
+    'page-size': 'A4',
+}
+
 
 # Convert HTML file to PDF
 pdf_file = 'styled_rainfall_with_borders.pdf'
