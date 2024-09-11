@@ -642,15 +642,50 @@ df['MAX T'] = df['MAX T'].astype(np.float64)
 
 df['DATETIME'] = df['DATETIME'].dt.strftime('(%H:%M)')
 
+
+
+
+
+
+
+
 # Create a new column 'RF_with_datetime'
 df['RF_with_datetime'] = df.apply(lambda row: f"{row['RF']}\n{row['DATETIME']}" if not pd.isna(row['DATETIME']) else row['RF'], axis=1)
 
 
 #df=df.drop('null', axis=1)
 df=df.drop('RF', axis=1)
-df=df.drop('DATETIME', axis=1)
+#df=df.drop('DATETIME', axis=1)
 
 df.columns =df.columns.str.replace('RF_with_datetime', 'RF',regex=False)
+
+
+
+
+
+
+
+
+
+# Create a new column 'RF_with_datetime'
+df['bat_with_datetime'] = df.apply(lambda row: f"{row['BAT']}\n{row['DATETIME']}" if not pd.isna(row['DATETIME']) else row['BAT'], axis=1)
+
+
+#df=df.drop('null', axis=1)
+df=df.drop('BAT', axis=1)
+#df=df.drop('DATETIME', axis=1)
+
+df.columns =df.columns.str.replace('bat_with_datetime', 'BAT',regex=False)
+
+
+
+
+
+
+
+
+
+
 
 
 # Create a new column 'RF_with_datetime'
