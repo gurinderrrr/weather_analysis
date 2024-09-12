@@ -221,12 +221,13 @@ combine_tday_mh.drop(mah_drop_today, inplace=True)
 
 
                         #choose columns to include in combine_tday_mh
-combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)']]
+combine_tday_mh=combine_tday_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)','BATTERY (Volts)']]
 
 
                        #replace names
 combine_tday_mh.columns =combine_tday_mh.columns.str.replace('DATE(YYYY-MM-DD)', 'DATE',regex=False)
 combine_tday_mh.columns =combine_tday_mh.columns.str.replace('RAIN FALL CUM. SINCE 0300 UTC (mm)', 'RF',regex=False)
+combine_tday_mh.columns=combine_tday_mh.columns.str.replace('BATTERY (Volts)', 'BAT',regex=False)
 
 
 combine_tday_mh['DATETIME'] = pd.to_datetime(combine_tday_mh['DATE'] + ' ' + combine_tday_mh['TIME (UTC)'])
@@ -330,7 +331,7 @@ combine_tday_03_mh.drop(mah_drop_03_today, inplace=True)
 
 
                         #choose columns to include in combine_tday_mh
-combine_tday_03_mh=combine_tday_03_mh[['STATION','TEMP DAY MIN. (\'C)','TEMP. (\'C)','WIND DIR 10 m (Deg)','WIND SPEED 10 m (Kt)','RH (%)','MSLP (hPa / gpm)','SLP (hPa)','BATTERY (Volts)','GPS']]
+combine_tday_03_mh=combine_tday_03_mh[['STATION','TEMP DAY MIN. (\'C)','TEMP. (\'C)','WIND DIR 10 m (Deg)','WIND SPEED 10 m (Kt)','RH (%)','MSLP (hPa / gpm)','SLP (hPa)','GPS']]
 
 
                        #replace names
@@ -340,7 +341,6 @@ combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('WIND DIR 10 m
 combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('WIND SPEED 10 m (Kt)', 'WS',regex=False)
 combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('SLP (hPa)', 'SLP',regex=False)
 combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
-combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('BATTERY (Volts)', 'BAT',regex=False)
 combine_tday_03_mh.columns=combine_tday_03_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
 
 
@@ -619,6 +619,7 @@ df['DISTRICT']=df.apply(map_dis_to_sta_mh, axis=1)
 df['RF'] = df['RF'].astype(np.float64)
 df['MIN T'] = df['MIN T'].astype(np.float64)
 df['MAX T'] = df['MAX T'].astype(np.float64)
+df['BAT'] = df['BAT'].astype(np.float64)
 
 
 
@@ -660,8 +661,8 @@ df=df.drop('RF', axis=1)
 df.columns =df.columns.str.replace('RF_with_datetime', 'RF',regex=False)
 
 
-
-
+#print(df)
+#exit()
 
 
 
@@ -678,9 +679,9 @@ df=df.drop('BAT', axis=1)
 df.columns =df.columns.str.replace('bat_with_datetime', 'BAT',regex=False)
 
 
+#print(df['STATIONS'],df['RF'],df['BAT'])
 
-
-
+#exit()
 
 
 
@@ -690,7 +691,7 @@ df.columns =df.columns.str.replace('bat_with_datetime', 'BAT',regex=False)
 
 # Create a new column 'RF_with_datetime'
 df['station_with_district'] = df.apply(
-    lambda row: f"{row['STATIONS']} (<b>{row['DISTRICT']}</b>)" if not pd.isna(row['DISTRICT']) else row['STATIONS'],
+    lambda row: f"{row['STATIONS']} ({row['DISTRICT']})" if not pd.isna(row['DISTRICT']) else row['STATIONS'],
     axis=1
 )
 
@@ -722,7 +723,8 @@ df = df[['S.No.','STATIONS','TYPE','RF', 'MIN T', 'MAX T', 'TEMP', 'WD','WS','RH
 # Convert rainfall column to numeric, forcing errors to NaN
 #df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
 
-
+#print(df.info())
+#exit()
 
 
 
@@ -735,7 +737,9 @@ awsarg_df_sum_data_mh= pd.DataFrame([["Total AWS/AGRO stations working"],['Total
 awsarg_df_sum_val_mh= pd.DataFrame([[df_tot],[df_rep],[arg_df_tot],[arg_df_rep]])
 
 
+#print(df['STATIONS'],df['RF'],df['BAT'])
 
+#exit()
 
 
 
@@ -797,14 +801,23 @@ def color_range(val):
     
 def bat_val(val):
     try:
-        # Convert val to a numeric type
-        numeric_val = float(val)
-    except (ValueError, TypeError):
-        # If conversion fails, return no styling
+        # Extract the numeric value from the string, or use the value directly if it's numeric
+        if isinstance(val, str):
+            # Attempt to split the string and convert the first part to a float
+            bat_value = float(val.split('\n')[0])
+        else:
+            # Use the value directly if it's already a numeric type
+            bat_value = float(val)
+    except (ValueError, IndexError):
+        # If conversion fails or splitting does not work, handle it gracefully
+        return ''
+    
+    # Apply styling based on the value range
+    if pd.isna(bat_value):  # Handle NaN values
         return ''
     
     # Apply styling if the value is less than 11
-    if numeric_val < 11:
+    elif bat_value < 11:
         return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
     else:
         return ''
@@ -826,7 +839,7 @@ df['WS'] = pd.to_numeric(df['WS'], errors='coerce')
 df['RH (%)'] = pd.to_numeric(df['RH (%)'], errors='coerce')
 df['SLP'] = pd.to_numeric(df['SLP'], errors='coerce')
 df['MSLP'] = pd.to_numeric(df['MSLP'], errors='coerce')
-df['BAT'] = pd.to_numeric(df['BAT'], errors='coerce')
+#df['BAT'] = pd.to_numeric(df['BAT'], errors='coerce')
 
 # Function to restructure DataFrame
 #def restructure_stations(df):
@@ -929,7 +942,7 @@ options = {
     'margin-bottom': '1mm',
     'margin-left': '5mm',
     'margin-right': '5mm',
-    'page-size': 'A4',
+    'page-size': 'A3',
 }
 
 
