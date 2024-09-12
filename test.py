@@ -853,6 +853,195 @@ df['MSLP'] = pd.to_numeric(df['MSLP'], errors='coerce')
 
 #df_restructured = restructure_stations(df)
 
+#def style_stations(df):
+# Apply CSS to ensure word wrapping in the HTML output
+# Define the styling function for DataFrame 1 (df)
+styled_df = df.style\
+    .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid',
+                       'text-align': "center", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
+    .set_table_styles([{'selector': 'th', 'props': [('border', '1pt solid black')]}])\
+    .map(neg_val, subset=['MIN T', 'MAX T'])\
+    .map(color_range, subset=['RF'])\
+    .map(bat_val, subset=['BAT'])\
+    .map(gps_val, subset=['GPS'])\
+    .map(lambda x: 'font-weight: bold;' if '<b>' in str(x) else '')\
+    .hide(axis='index')  # Hide the index
+
+# Save styled df to HTML
+html_file = 'styled_table.html'
+styled_df.format(precision=1, na_rep="").to_html(html_file, index=False, escape=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Define the styling function for DataFrame 2 (df_pg_hd_mh)
+head_styled_df = df_pg_hd_mh.style\
+    .set_properties(**{'font-family': "Calibri", 'font-weight': 'bold', 'font-size': '16pt',
+                       'text-align': "center", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
+    .hide(axis='index')  # Hide the index
+
+# Save the second styled df to another HTML file
+head_html_file = 'head_styled_table.html'
+head_styled_df.to_html(head_html_file, index=False, escape=False)
+
+# Read both HTML files
+with open(html_file, 'r') as f1:
+    styled_table_html = f1.read()
+
+with open(head_html_file, 'r') as f2:
+    head_styled_table_html = f2.read()
+
+# Combine the HTML strings with custom formatting
+combined_html = f'''
+<html>
+<body>
+    {head_styled_table_html}
+    {styled_table_html}
+</body>
+</html>
+'''
+
+# Save the combined HTML content to a file
+combined_html_file = 'combined_table.html'
+with open(combined_html_file, 'w') as f:
+    f.write(combined_html)
+
+# Convert the combined HTML file to a PDF
+pdf_file = 'styled_rainfall_with_borders.pdf'
+options = {
+    'margin-top': '1mm',
+    'margin-bottom': '1mm',
+    'margin-left': '5mm',
+    'margin-right': '5mm',
+    'page-size': 'A4',
+}
+
+# Convert combined HTML to PDF
+pdfkit.from_file(combined_html_file, pdf_file, options=options)
+
+exit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -884,7 +1073,7 @@ def df_to_html(df, text_align='center'):
     # Handle precision and NaN for non-styled DataFrames
     if isinstance(df, pd.DataFrame):
         df = df.fillna('')  # Replace NaN with empty string
-        return df.to_html(header=False, index=False, border=1)\
+        return df.to_html(header=False, index=False)\
                  .replace('<table', f'<table style="text-align: {text_align}"')
     else:
         return df.to_html()
@@ -895,47 +1084,29 @@ df_pg_hd_mh = pd.DataFrame(['STATE: MAHARASHTRA (DATE)'])  # Example header Data
 # Styled DataFrame
 styled_df = style_dataframe(df)
 
-# Combine the HTML for all DataFrames
-html_string = f'''
-<html>
-<head>
-<style>
-    body {{
-        font-family: Arial, sans-serif;
-        margin: 20px;
-    }}
-    table {{
-        margin-bottom: 30px;
-        border-collapse: collapse;
-        width: 50%;
-    }}
-    th, td {{
-        border: 1px solid black;
-        text-align: center;
-        padding: 5px;
-    }}
-    h2 {{
-        margin-top: 50px;
-    }}
-</style>
-</head>
-<body>
 
-<h2>State: Maharashtra (from {d0_2} 3UTC to {d1_2} 3UTC)</h2>
 
-{df_to_html(df_pg_hd_mh, text_align='center')}  <!-- Heading DataFrame -->
+{df_to_html(df_pg_hd_mh, text_align='center')} 
 
-{styled_df.to_html()}    <!-- Styled DataFrame -->
+{styled_df.to_html()}   
 
-</body>
-</html>
-'''
+
 
 # Save the combined HTML to a file
 html_file = 'combined_tables_maharashtra.html'
-with open(html_file, 'w') as f:
-    f.write(html_string)
+# Manually add additional CSS for header styling
+html_content = ''
+with open(html_file, 'r') as file:
+    html_content = file.read()
 
+html_content = html_content.replace(
+    "<style type=\"text/css\">",
+    "<style type=\"text/css\"> th { font-size: 12pt; }"
+)
+
+# Save updated HTML
+with open(html_file, 'w') as file:
+    file.write(html_content)
 # Convert HTML file to PDF
 pdf_file = 'styled_rainfall_with_borders.pdf'
 
