@@ -700,7 +700,7 @@ df['station_with_district'] = df.apply(
 df=df.drop('STATIONS', axis=1)
 df=df.drop('DISTRICT', axis=1)
 
-df.columns =df.columns.str.replace('station_with_district', 'STATIONS',regex=False)
+df.columns =df.columns.str.replace('station_with_district', 'STATIONS (DISTRICT)',regex=False)
 
 
 
@@ -719,7 +719,7 @@ arg_df_rep=len(arg_mh)-len(df[(df['TYPE'] == 'ARG') & (df['null'] == 3)])
 df=df.drop('null', axis=1)
 
 # Reorder columns as needed
-df = df[['S.No.','STATIONS','TYPE','RF', 'MIN T', 'MAX T', 'TEMP', 'WD','WS','RH (%)','SLP','MSLP', 'BAT', 'GPS']]
+df = df[['S.No.','STATIONS (DISTRICT)','TYPE','RF', 'MIN T', 'MAX T', 'TEMP', 'WD','WS','RH (%)','SLP','MSLP', 'BAT', 'GPS']]
 # Convert rainfall column to numeric, forcing errors to NaN
 #df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
 
@@ -853,9 +853,7 @@ df['MSLP'] = pd.to_numeric(df['MSLP'], errors='coerce')
 
 #df_restructured = restructure_stations(df)
 
-#def style_stations(df):
-# Apply CSS to ensure word wrapping in the HTML output
-# Define the styling function for DataFrame 1 (df)
+# Define the styling for the main DataFrame (df)
 styled_df = df.style\
     .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid',
                        'text-align': "center", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
@@ -865,41 +863,21 @@ styled_df = df.style\
     .map(bat_val, subset=['BAT'])\
     .map(gps_val, subset=['GPS'])\
     .map(lambda x: 'font-weight: bold;' if '<b>' in str(x) else '')\
-    .hide(axis='index')  # Hide the index
+    .hide(axis='index')  # Hide the index for the main DataFrame
 
-# Save styled df to HTML
+# Save the styled df to HTML
 html_file = 'styled_table.html'
 styled_df.format(precision=1, na_rep="").to_html(html_file, index=False, escape=False)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Define the styling function for DataFrame 2 (df_pg_hd_mh)
+# Define the styling for the header DataFrame (df_pg_hd_mh)
 head_styled_df = df_pg_hd_mh.style\
     .set_properties(**{'font-family': "Calibri", 'font-weight': 'bold', 'font-size': '16pt',
                        'text-align': "center", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
-    .hide(axis='index')  # Hide the index
+    .hide(axis='index')  # Hide the index for the header DataFrame
 
-# Save the second styled df to another HTML file
+# Save the header styled df to another HTML file without header and index
 head_html_file = 'head_styled_table.html'
-head_styled_df.to_html(head_html_file, index=False, escape=False)
+head_styled_df.to_html(head_html_file, header=False, index=False, escape=False)
 
 # Read both HTML files
 with open(html_file, 'r') as f1:
@@ -908,12 +886,21 @@ with open(html_file, 'r') as f1:
 with open(head_html_file, 'r') as f2:
     head_styled_table_html = f2.read()
 
-# Combine the HTML strings with custom formatting
+# Combine the HTML strings with custom formatting to place the header above the main table
 combined_html = f'''
 <html>
+<head>
+    <style>
+        h2 {{
+            text-align: center;
+            font-family: "Calibri";
+            font-size: 16pt;
+        }}
+    </style>
+</head>
 <body>
-    {head_styled_table_html}
-    {styled_table_html}
+    <h2>{df_pg_hd_mh.iloc[0, 0]}</h2>  <!-- Display the header as centered text -->
+    {styled_table_html}  <!-- Display the styled main table -->
 </body>
 </html>
 '''
@@ -926,8 +913,8 @@ with open(combined_html_file, 'w') as f:
 # Convert the combined HTML file to a PDF
 pdf_file = 'styled_rainfall_with_borders.pdf'
 options = {
-    'margin-top': '1mm',
-    'margin-bottom': '1mm',
+    'margin-top': '3mm',
+    'margin-bottom': '3mm',
     'margin-left': '5mm',
     'margin-right': '5mm',
     'page-size': 'A4',
