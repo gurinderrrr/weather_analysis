@@ -28,6 +28,8 @@ ytday_day_str = y_day.strftime("%d")    # Day as a string
 
 print(day_str,ytday_day_str)
 
+
+
                      #generate list of aws and STATIONS
 all_index=[ 43057,
         43003,
@@ -201,17 +203,12 @@ def convert_temp(code):
 df_combined['Observatory Temp (°C)'] = df_combined['Temp Code'].apply(convert_max_temp)
 
 
-df_combined=df_combined[['STATIONS','YEAR', 'MONTH', 'DAY', 'HOUR','Observatory Rainfall (mm)','Observatory Temp (°C)','Observatory Min Temp (°C)','Observatory Max Temp (°C)','Observatory Pressure (hPa)']]
+df_combined['DATETIME'] = pd.to_datetime(df_combined[['YEAR', 'MONTH', 'DAY', 'HOUR']])
+df_combined['DATETIME'] = df_combined['DATETIME'].dt.strftime('%Y-%m-%d %H')
+
+df_combined=df_combined[['STATIONS','DATETIME','Observatory Rainfall (mm)','Observatory Temp (°C)','Observatory Min Temp (°C)','Observatory Max Temp (°C)','Observatory Pressure (hPa)']]
 
 df_combined.to_excel('C:\\Users\\hp\\Desktop\\test ogi.xlsx', index=False)
-
-
-#exit()
-
-
-
-
-
 
 
 
@@ -252,7 +249,7 @@ today_03_mh.drop(mah_drop_03_today, inplace=True)
 
 
                         #choose columns to include in combine_tday_mh
-today_03_mh=today_03_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP. (\'C)','TEMP DAY MIN. (\'C)','TEMP DAY MAX. (\'C)','MSLP (hPa / gpm)']]
+today_03_mh=today_03_mh[['STATION','DATE(YYYY-MM-DD)','TIME (UTC)','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP. (\'C)','TEMP DAY MIN. (\'C)','TEMP DAY MAX. (\'C)','SLP (hPa)']]
 
 
                        #replace names
@@ -262,131 +259,89 @@ today_03_mh.columns =today_03_mh.columns.str.replace('RAIN FALL CUM. SINCE 0300 
 today_03_mh.columns =today_03_mh.columns.str.replace('TEMP. (\'C)', 'TEMP',regex=False)
 today_03_mh.columns =today_03_mh.columns.str.replace('TEMP DAY MIN. (\'C)', 'MIN T',regex=False)
 today_03_mh.columns =today_03_mh.columns.str.replace('TEMP DAY MAX. (\'C)', 'MAX T',regex=False)
-today_03_mh.columns =today_03_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
+today_03_mh.columns =today_03_mh.columns.str.replace('SLP (hPa)', 'SLP',regex=False)
 
-print(today_03_mh)
-exit()
+
 # Filter rows where 'REPORT' does not start with 'BBXX' and 'date' equals '03'
-today_03_mh = today_03_mh[(today_03_mh['TIME (UTC)'] == 00)|(today_03_mh['TIME (UTC)'] == 3)|(today_03_mh['TIME (UTC)'] == 6)|(today_03_mh['TIME (UTC)'] == 9)|(today_03_mh['TIME (UTC)'] == 12)|(today_03_mh['TIME (UTC)'] == 15)|(today_03_mh['TIME (UTC)'] == 18)]
+today_03_mh = today_03_mh[(today_03_mh['TIME (UTC)'] == '00:00:00')|(today_03_mh['TIME (UTC)'] == '03:00:00')|(today_03_mh['TIME (UTC)'] == '06:00:00')|(today_03_mh['TIME (UTC)'] == '09:00:00')|(today_03_mh['TIME (UTC)'] == '12:00:00')|(today_03_mh['TIME (UTC)'] == '15:00:00')|(today_03_mh['TIME (UTC)'] == '18:00:00')|(today_03_mh['TIME (UTC)'] == '21:00:00')]
+#print(today_03_mh)
+#exit()
 
 
 
-combined_all_03_stations = aws_mh_df.merge(today_03_mh, on='STATIONS', how='left')
+today_03_mh['DATETIME'] = pd.to_datetime(today_03_mh['DATE'] + ' ' + today_03_mh['TIME (UTC)'])
+today_03_mh = today_03_mh.drop(columns=['DATE', 'TIME (UTC)'])
 
-print(combined_all_03_stations)
-exit()
 
+#print(today_03_mh)
+#exit()
 
-combined_all_03_stations.to_excel('C:\\Users\\hp\\Desktop\\test rimc ogi.xlsx', index=False)
+#Define the start date, end date, and frequency
+start_datetime = d0 + ' 00:00:00'
+end_datetime = d1 + ' 03:00:00'
+frequency = '3H'
 
-exit()
+#Create a datetime range
+datetime_range = pd.date_range(start=start_datetime, end=end_datetime, freq=frequency)
 
-final_combined = df_full_combined.merge(combine_final, on='STATIONS', how='left')
+# Create a DataFrame with the datetime range
+datetime_df = pd.DataFrame(datetime_range, columns=['DATETIME'])
 
-final_combined=final_combined[['STATIONS','Observatory Rainfall (mm)','RF','Observatory Min Temp (°C)','MIN T','Observatory Max Temp (°C)','MAX T','Observatory Pressure (hPa)','MSLP (hPa / gpm)']]
 
+#print(datetime_df)
 
 
+# Assuming df1 and df2 are your DataFrames
+df3 = pd.merge(aws_mh_df, datetime_df, how='cross')
 
-print(final_combined)
-print(final_combined.info())
+#df3.to_excel('C:\\Users\\hp\\Desktop\\df3.xlsx', index=False)
 
-final_combined.to_excel('C:\\Users\\hp\\Desktop\\comparison.xlsx', index=False)
+#exit()
+# Merge with the original df to include all stations and all datetimes
+final_df = pd.merge(df3, today_03_mh, on=['STATIONS', 'DATETIME'], how='left')
 
+final_df['datetime_combined'] = final_df['DATETIME'].dt.strftime('%Y-%m-%d %H')
+final_df=final_df.drop('DATETIME', axis=1)
 
+final_df.columns =final_df.columns.str.replace('datetime_combined', 'DATETIME',regex=False)
 
 
+# Assuming df2 is your DataFrame with a 'datetime' column
+#final_df['datetime'] = pd.to_datetime(final_df['datetime'])
 
+# Creating new columns for year, month, day, and hour
+#final_df['YEAR'] = final_df['DATETIME'].dt.year
+#final_df['MONTH'] = final_df['DATETIME'].dt.month
+#final_df['DAY'] = final_df['DATETIME'].dt.day
+#final_df['HOUR'] = final_df['DATETIME'].dt.hour
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-exit()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                     #generate list of aws and STATIONS
-aws_mh=["MUMBAI_COLABA","MUMBAI_SANTA_CRUZ",'RATNAGIRI','MAHABALESHWAR','SATARA','SOLAPUR']
-#Merge with all_mh to include all stations
-aws_mh_df = pd.DataFrame({'STATIONS': aws_mh})
-
-
-
-#Collect today's data (adjust your URLs accordingly)
-today_03_mh = pd.read_html(f'http://aws.imd.gov.in:8091/AWS/dataview.php?a=AWSAGRO&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e={d0}&f={d1}&g=ALL_HOUR&h=00')[0]
-
-
-
-                            #drop vidarbha stations
-mah_drop_03_today = today_03_mh[(today_03_mh['DISTRICT'] == 'AKOLA') | (today_03_mh['DISTRICT'] == 'AMRAVATI')|
-(today_03_mh['DISTRICT'] == 'BHANDARA') | (today_03_mh['DISTRICT'] == 'BULDHANA')|
-(today_03_mh['DISTRICT'] == 'CHANDRAPUR') | (today_03_mh['DISTRICT'] == 'GADCHIROLI')|
-(today_03_mh['DISTRICT'] == 'GONDIA') | (today_03_mh['DISTRICT'] == 'NAGPUR')|
-(today_03_mh['DISTRICT'] == 'YAVATMAL') | (today_03_mh['DISTRICT'] == 'WARDHA')|
-(today_03_mh['DISTRICT'] == 'WASHIM')].index
-today_03_mh.drop(mah_drop_03_today, inplace=True)
-
-
-                        #choose columns to include in combine_tday_mh
-today_03_mh=today_03_mh[['STATION','RAIN FALL CUM. SINCE 0300 UTC (mm)','TEMP DAY MIN. (\'C)','MSLP (hPa / gpm)']]
-
-
-                       #replace names
-today_03_mh.columns =today_03_mh.columns.str.replace('STATION', 'STATIONS',regex=False)
-today_03_mh.columns =today_03_mh.columns.str.replace('RAIN FALL CUM. SINCE 0300 UTC (mm)', 'RF',regex=False)
-today_03_mh.columns =today_03_mh.columns.str.replace('TEMP DAY MIN. (\'C)', 'MIN T',regex=False)
-
-
-
-combined_all_03_stations = aws_mh_df.merge(today_03_mh, on='STATIONS', how='left')
 
 #print(combined_all_03_stations)
+#exit()
 
 
+final_df=final_df[['STATIONS','DATETIME','RF','TEMP','MAX T','MIN T','SLP']]
 
 
+print(final_df.info())
+print(df_combined.info())
 
 
 
+final_df.to_excel('C:\\Users\\hp\\Desktop\\final_df.xlsx', index=False)
 
 
+complete_final_df = pd.merge(final_df, df_combined, on=['STATIONS', 'DATETIME'], 
+how='left')
 
 
+complete_final_df.columns =complete_final_df.columns.str.replace('Observatory Rainfall (mm)', 'OBS RF',regex=False)
+complete_final_df.columns =complete_final_df.columns.str.replace('Observatory Temp (°C)', 'OBS TEMP',regex=False)
+complete_final_df.columns =complete_final_df.columns.str.replace('Observatory Min Temp (°C)', 'OBS MIN T',regex=False)
+complete_final_df.columns =complete_final_df.columns.str.replace('Observatory Max Temp (°C)', 'OBS MAX T',regex=False)
+complete_final_df.columns =complete_final_df.columns.str.replace('Observatory Pressure (hPa)', 'OBS SLP',regex=False)
 
 
 
@@ -394,78 +349,28 @@ combined_all_03_stations = aws_mh_df.merge(today_03_mh, on='STATIONS', how='left
 
 
 
+complete_final_df=complete_final_df[['STATIONS','DATETIME','RF', 'OBS RF','TEMP', 'OBS TEMP','MIN T','OBS MIN T','MAX T','OBS MAX T','SLP','OBS SLP']]
 
 
 
+# Apply styles to the DataFrame
+styled_df = complete_final_df.style\
+        .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid','text-align': "center"})\
+        .set_table_styles([{
+        'selector': 'th',
+        'props': [('border', '1pt solid')]}])\
+        .to_excel('C:\\Users\\hp\\Desktop\\complete_final_df.xlsx', index=False)
 
-
-
-            #collect yesterdays aws tabular data
-yesterday_mh=pd.read_html('http://aws.imd.gov.in:8091/AWS/dataview.php?a=AWSAGRO&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e='+d0+'&f='+d0+'&g=12&h=00')
-dfy_mh=yesterday_mh[0]
-             #collect yesterdays arg tabular data
-arg_yesterday_mh=pd.read_html('http://aws.imd.gov.in:8091/AWS/dataview.php?a=ARG&b=MAHARASHTRA&c=ALL_DISTRICT&d=ALL_STATION&e='+d0+'&f='+d0+'&g=12&h=00')
-arg_dfy_mh=arg_yesterday_mh[0]
-
-
-                                #combine the two dataframes
-combine_yday_mh=pd.concat([dfy_mh,arg_dfy_mh], ignore_index=True)
-
-
-
-                                #drop vidarbha stations
-mah_drop_yesterday = combine_yday_mh[(combine_yday_mh['DISTRICT'] == 'AKOLA') | (combine_yday_mh['DISTRICT'] == 'AMRAVATI')|
-               (combine_yday_mh['DISTRICT'] == 'BHANDARA') | (combine_yday_mh['DISTRICT'] == 'BULDHANA')|
-               (combine_yday_mh['DISTRICT'] == 'CHANDRAPUR') | (combine_yday_mh['DISTRICT'] == 'GADCHIROLI')|
-               (combine_yday_mh['DISTRICT'] == 'GONDIA') | (combine_yday_mh['DISTRICT'] == 'NAGPUR')|
-               (combine_yday_mh['DISTRICT'] == 'YAVATMAL') | (combine_yday_mh['DISTRICT'] == 'WARDHA')|
-               (combine_yday_mh['DISTRICT'] == 'WASHIM')].index
-combine_yday_mh.drop(mah_drop_yesterday, inplace=True)
-
-
-                            #choose columns to include in combine_yday_mh
-combine_yday_mh=combine_yday_mh[['STATION','TEMP DAY MAX. (\'C)']]
-
-
-                           #replace names
-combine_yday_mh.columns =combine_yday_mh.columns.str.replace('STATION', 'STATIONS',regex=False)
-combine_yday_mh.columns =combine_yday_mh.columns.str.replace('TEMP DAY MAX. (\'C)', 'MAX T',regex=False)
-
-
-
-
-combined_all_12_stations = aws_mh_df.merge(combine_yday_mh, on='STATIONS', how='left')
-
-#print(combined_all_12_stations)
-
-
-combine_final=combined_all_03_stations.merge(combined_all_12_stations, on='STATIONS', how='left')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#complete_final_df.to_excel('C:\\Users\\hp\\Desktop\\complete_final_df.xlsx', index=False)
 
 
 exit()
+
+
+
+
+
+
+
+
+
