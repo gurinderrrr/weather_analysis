@@ -689,17 +689,17 @@ df.columns =df.columns.str.replace('bat_with_datetime', 'BAT',regex=False)
 
 
 # Create a new column 'RF_with_datetime'
-df['station_with_district'] = df.apply(
-    lambda row: f"{row['STATIONS']} ({row['DISTRICT']})" if not pd.isna(row['DISTRICT']) else row['STATIONS'],
-    axis=1
-)
+#df['station_with_district'] = df.apply(
+    #lambda row: f"{row['STATIONS']} ({row['DISTRICT']})" if not pd.isna(row#['DISTRICT']) else row['STATIONS'],
+    #axis=1
+#)
 
 
 #df=df.drop('null', axis=1)
-df=df.drop('STATIONS', axis=1)
-df=df.drop('DISTRICT', axis=1)
+#df=df.drop('STATIONS', axis=1)
+#df=df.drop('DISTRICT', axis=1)
 
-df.columns =df.columns.str.replace('station_with_district', 'STATIONS (DISTRICT)',regex=False)
+#df.columns =df.columns.str.replace('station_with_district', 'STATIONS (DISTRICT)',regex=False)
 
 
 
@@ -715,198 +715,101 @@ arg_df_tot=len(arg_mh)
 arg_df_rep=len(arg_mh)-len(df[(df['TYPE'] == 'ARG') & (df['null'] == 3)])
 
 
-df=df.drop('null', axis=1)
+# Replace NaN values with empty strings across all columns
+df = df.fillna('')
 
 # Reorder columns as needed
-df = df[['S.No.','STATIONS (DISTRICT)','TYPE','RF', 'MIN T', 'MAX T', 'TEMP','RH (%)', 'WD','WS','MSLP', 'BAT', 'GPS']]
-# Convert rainfall column to numeric, forcing errors to NaN
-#df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
+df = df[['S.No.', 'STATIONS','DISTRICT','TYPE', 'RF', 'MIN T', 'MAX T', 'TEMP', 'RH (%)', 'WD', 'WS', 'MSLP', 'BAT', 'GPS']]
 
-#print(df.info())
-#exit()
-
-
-
-
-df_pg_hd_mh=pd.DataFrame(['STATE: MAHARASHTRA ('+d0_2+' 3UTC to '+d1_2+' 3UTC)'])
-
-
-df_rf_leg_mh=pd.DataFrame({'':['Not Reported','1mm <= RF <= 2.4mm/\nLowest Temp','2.5mm <= RF <= 15.5mm','15.6mm <= RF <= 64.4mm','64.5mm <= RF <= 115.5mm','115.6mm <= RF <= 204.4mm','RF > 204.4/\nHighest Temp','Error Values']})
-df_rf_leg_col_mh=pd.DataFrame({'':['','Lowest Temp','','','','','Highest Temp','Error Value']})
-awsarg_df_sum_data_mh= pd.DataFrame([["Total AWS/AGRO stations working"],['Total AWS/AGRO stations reporting'],['Total ARG stations working'],['Total ARG stations reporting']])
-awsarg_df_sum_val_mh= pd.DataFrame([[df_tot],[df_rep],[arg_df_tot],[arg_df_rep]])
-
-
-#print(df['STATIONS'],df['RF'],df['BAT'])
-
-#exit()
-
-
-
-# Define your styling functions
-#def highlight_max(s):
-    #is_max = s == s.max()
-    #return ['background-color: red; font-weight: bold' if v else '' for v in is_max]
-
-#def highlight_min(s):
-    #is_min = s == s.min()
-    #return ['background-color: #98FB98; font-weight: bold' if v else '' for v in is_min]
-
+# Styling functions
 def neg_val(val):
     try:
-        # Attempt to convert the value to a numeric type
-        numeric_val = float(val)
+        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;' if float(val) < 0 else ''
     except ValueError:
-        # If conversion fails, treat the value as non-numeric
-        return ''
-    
-    # Apply the styling only if the value is numeric and less than 0
-    if numeric_val < 0:
-        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
-    else:
         return ''
 
 def color_range(val):
     try:
-        # Extract the numeric value from the string, or use the value directly if it's numeric
-        if isinstance(val, str):
-            # Attempt to split the string and convert the first part to a float
-            rf_value = float(val.split('\n')[0])
-        else:
-            # Use the value directly if it's already a numeric type
-            rf_value = float(val)
+        rf_value = float(val.split('\n')[0]) if isinstance(val, str) else float(val)
+        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;' if rf_value % 0.5 != 0 else ''
     except (ValueError, IndexError):
-        # If conversion fails or splitting does not work, handle it gracefully
         return ''
-    
-    # Apply styling based on the value range
-    if pd.isna(rf_value):  # Handle NaN values
-        return ''
-    elif rf_value % 0.5 != 0:  # if not a multiple of 0.5
-        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
-    #elif 1 <= rf_value <= 2.4:  # lr
-       # return 'background-color: #ADFF2F; font-weight: bold'
-    #elif 2.5 <= rf_value <= 15.5:  # mr
-       # return 'background-color: #00FF00; font-weight: bold'
-   # elif 15.6 <= rf_value <= 64.4:  # hr
-   #     return 'background-color: #00FFFF; font-weight: bold'
-    #elif 64.5 <= rf_value <= 115.5:  # vhr
-    #    return 'background-color: #FFFF00; font-weight: bold'
-   # elif 115.6 <= rf_value <= 204.4:  # vhr
-    #    return 'background-color: #FFA500; font-weight: bold'
-   # elif rf_value > 204.4:  # ehr
-    #    return 'background-color: #FF0000; font-weight: bold'
-    else:
-        return ''
-    
+
 def bat_val(val):
     try:
-        # Extract the numeric value from the string, or use the value directly if it's numeric
-        if isinstance(val, str):
-            # Attempt to split the string and convert the first part to a float
-            bat_value = float(val.split('\n')[0])
-        else:
-            # Use the value directly if it's already a numeric type
-            bat_value = float(val)
+        bat_value = float(val.split('\n')[0]) if isinstance(val, str) else float(val)
+        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;' if bat_value < 11 else ''
     except (ValueError, IndexError):
-        # If conversion fails or splitting does not work, handle it gracefully
         return ''
-    
-    # Apply styling based on the value range
-    if pd.isna(bat_value):  # Handle NaN values
-        return ''
-    
-    # Apply styling if the value is less than 11
-    elif bat_value < 11:
-        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
-    else:
-        return ''
-    
+
 def gps_val(val):
-    if val =="U":
-        return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;'
-    else:
-        return ''
+    return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;' if val == "U" else ''
+
+# Define the styling for the DataFrame
+styled_df = df.style \
+    .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid', 'text-align': "left"}) \
+    .set_table_styles([{'selector': 'th', 'props': [('border', '1pt solid black')]}]) \
+    .map(neg_val, subset=['MIN T', 'MAX T']) \
+    .map(color_range, subset=['RF']) \
+    .map(bat_val, subset=['BAT']) \
+    .map(gps_val, subset=['GPS']) \
+    .hide(axis='index')
+
+# Replace '\n' with '<br>' for proper line breaks in HTML
+df = df.map(lambda x: x.replace('\n', '<br>') if isinstance(x, str) else x)
 
 
 
-#df['RF'] = pd.to_numeric(df['RF'], errors='coerce')
-df['TEMP'] = pd.to_numeric(df['TEMP'], errors='coerce')
-df['MIN T'] = pd.to_numeric(df['MIN T'], errors='coerce')
-df['MAX T'] = pd.to_numeric(df['MAX T'], errors='coerce')
-df['WD'] = pd.to_numeric(df['WD'], errors='coerce')
-df['WS'] = pd.to_numeric(df['WS'], errors='coerce')
-df['RH (%)'] = pd.to_numeric(df['RH (%)'], errors='coerce')
-df['MSLP'] = pd.to_numeric(df['MSLP'], errors='coerce')
-#df['BAT'] = pd.to_numeric(df['BAT'], errors='coerce')
-
-# Function to restructure DataFrame
-#def restructure_stations(df):
-    #restructured_data = []
-    #for district, group in df.groupby('DISTRICT'):
-    #    restructured_data.append([f"<b>{district}</b>"])  # Add district in bold
-     #   restructured_data.extend(group[['STATIONS']].values.tolist())  # Add stations
-   # 
-   # return pd.DataFrame(restructured_data, columns=['STATIONS'])
-
-#df_restructured = restructure_stations(df)
-
-# Define the styling for the main DataFrame (df)
-styled_df = df.style\
-    .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid',
-                       'text-align': "left", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
-    .set_table_styles([{'selector': 'th', 'props': [('border', '1pt solid black')]}])\
-    .map(neg_val, subset=['MIN T', 'MAX T'])\
-    .map(color_range, subset=['RF'])\
-    .map(bat_val, subset=['BAT'])\
-    .map(gps_val, subset=['GPS'])\
-    .map(lambda x: 'font-weight: bold;' if '<b>' in str(x) else '')\
-    .hide(axis='index')  # Hide the index for the main DataFrame
-
-# Save the styled df to HTML
-html_file = 'styled_table.html'
-styled_df.format(precision=1, na_rep="").to_html(html_file, index=False, escape=False)
-
-# Define the styling for the header DataFrame (df_pg_hd_mh)
-#head_styled_df = df_pg_hd_mh.style\
-    #.set_properties(**{'font-family': "Calibri", 'font-weight': 'bold', 'font-size': '16pt',
-                   #    'text-align': "left", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
-   # .hide(axis='index')  # Hide the index for the header DataFrame
-
-# Save the header styled df to another HTML file without header and index
-#head_html_file = 'head_styled_table.html'
-#head_styled_df.to_html(head_html_file, header=False, index=False, escape=False)
-
-# Read both HTML files
-with open(html_file, 'r') as f1:
-    styled_table_html = f1.read()
-
-#with open(head_html_file, 'r') as f2:
-    #head_styled_table_html = f2.read()
-
-# Combine the HTML strings with custom formatting to place the header above the main table
-combined_html = f'''
+# Create the HTML structure to center the table and handle district-wise display
+html_output = '''
 <html>
 <head>
     <style>
-        h2 {{
-            text-align: center;
-            font-family: "Calibri";
-            font-size: 16pt;
-        }}
+        table {border-collapse: collapse; margin: 0 auto;}  /* Center-align tables */
+        th, td {border: 1px solid black; padding: 8px; text-align: center;}
+        h2 {text-align: center;}
     </style>
 </head>
 <body>
-    <h2>{df_pg_hd_mh.iloc[0, 0]}</h2>  <!-- Display the header as centered text -->
-    {styled_table_html}  <!-- Display the styled main table -->
-</body>
-</html>
 '''
 
-# Save the combined HTML content to a file
+# Iterate over each district to create district-wise tables
+for district in df['DISTRICT'].unique():
+    html_output += f'<h2>DISTRICT: {district}</h2>\n'
+    
+    # Filter rows for the current district
+    district_df = df[df['DISTRICT'] == district].reset_index(drop=True)
+    
+    # Set the S.No. column to the correct serial numbers for the district
+    district_df['S.No.'] = district_df.index + 1
+    
+    # Drop the 'DISTRICT' column
+    district_df = district_df.drop(columns=["DISTRICT"])
+    
+    # Apply styles to the filtered district DataFrame
+    styled_district_df = district_df.style \
+        .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid', 'text-align': "left"}) \
+        .set_table_styles([{'selector': 'th', 'props': [('border', '1pt solid black')]}]) \
+        .map(neg_val, subset=['MIN T', 'MAX T']) \
+        .map(color_range, subset=['RF']) \
+        .map(bat_val, subset=['BAT']) \
+        .map(gps_val, subset=['GPS']) \
+        .hide(axis='index')
+    
+    # Convert the styled district DataFrame to HTML and center-align the table
+    district_html = styled_district_df.format(precision=1, na_rep="").to_html()  # Render styled DataFrame to HTML
+    
+    # Inject the styled HTML for the current district into the final HTML
+    html_output += f'<div style="text-align: center;">{district_html}</div>'
+    html_output += '<br><br>\n'
+
+html_output += '</body></html>'
+
+# Save the final HTML output to a file
 combined_html_file = 'combined_table.html'
 with open(combined_html_file, 'w') as f:
-    f.write(combined_html)
+    f.write(html_output)
+
 
 # Convert the combined HTML file to a PDF
 pdf_file = 'styled_rainfall_with_borders.pdf'
@@ -922,192 +825,3 @@ options = {
 pdfkit.from_file(combined_html_file, pdf_file, options=options)
 
 exit()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Style DataFrame
-def style_dataframe(df):
-    styled_df = df.style\
-        .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid', 'text-align': "center", 'white-space': 'pre-wrap', 'word-wrap': 'break-word'})\
-        .set_table_styles([{'selector': 'th', 'props': [('border', '1pt solid black')]}])\
-        .map(neg_val, subset=['MIN T', 'MAX T'])\
-        .map(color_range, subset=['RF'])\
-        .map(bat_val, subset=['BAT'])\
-        .map(gps_val, subset=['GPS'])\
-        .format(precision=1, na_rep="")  # Handle precision and NaN values
-    return styled_df
-
-# Convert DataFrame to HTML with precision and NaN handling for non-styled DataFrame
-def df_to_html(df, text_align='center'):
-    # Handle precision and NaN for non-styled DataFrames
-    if isinstance(df, pd.DataFrame):
-        df = df.fillna('')  # Replace NaN with empty string
-        return df.to_html(header=False, index=False)\
-                 .replace('<table', f'<table style="text-align: {text_align}"')
-    else:
-        return df.to_html()
-
-# Example DataFrames
-df_pg_hd_mh = pd.DataFrame(['STATE: MAHARASHTRA (DATE)'])  # Example header DataFrame
-
-# Styled DataFrame
-styled_df = style_dataframe(df)
-
-
-
-{df_to_html(df_pg_hd_mh, text_align='center')} 
-
-{styled_df.to_html()}   
-
-
-
-# Save the combined HTML to a file
-html_file = 'combined_tables_maharashtra.html'
-# Manually add additional CSS for header styling
-html_content = ''
-with open(html_file, 'r') as file:
-    html_content = file.read()
-
-html_content = html_content.replace(
-    "<style type=\"text/css\">",
-    "<style type=\"text/css\"> th { font-size: 12pt; }"
-)
-
-# Save updated HTML
-with open(html_file, 'w') as file:
-    file.write(html_content)
-# Convert HTML file to PDF
-pdf_file = 'styled_rainfall_with_borders.pdf'
-
-# Define options for the PDF including margin settings
-options = {
-    'margin-top': '1mm',
-    'margin-bottom': '1mm',
-    'margin-left': '5mm',
-    'margin-right': '5mm',
-    'page-size': 'A3',
-}
-
-# Convert HTML file to PDF using pdfkit
-pdfkit.from_file(html_file, pdf_file, options=options)
-
-
-
-exit()
-
