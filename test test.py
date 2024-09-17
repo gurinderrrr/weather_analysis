@@ -745,15 +745,6 @@ def bat_val(val):
 def gps_val(val):
     return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;' if val == "U" else ''
 
-# Define the styling for the DataFrame
-styled_df = df.style \
-    .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid', 'text-align': "left"}) \
-    .set_table_styles([{'selector': 'th', 'props': [('border', '1pt solid black')]}]) \
-    .map(neg_val, subset=['MIN T', 'MAX T']) \
-    .map(color_range, subset=['RF']) \
-    .map(bat_val, subset=['BAT']) \
-    .map(gps_val, subset=['GPS']) \
-    .hide(axis='index')
 
 # Replace '\n' with '<br>' for proper line breaks in HTML
 df = df.map(lambda x: x.replace('\n', '<br>') if isinstance(x, str) else x)
@@ -765,17 +756,67 @@ html_output = '''
 <html>
 <head>
     <style>
-        table {border-collapse: collapse; margin: 0 auto;}  /* Center-align tables */
-        th, td {border: 1px solid black; padding: 8px; text-align: center;}
-        h2 {text-align: center;}
+        @media print {
+            thead {display: table-header-group;} /* Repeat table headers on each page */
+        }
+        h2 {
+            text-align: center;
+            font-size: 12pt;  /* Reduce font size */
+            margin-bottom: 0px;  /* Decrease gap between name and table */
+            margin-top: 10px;  /* Adjust the gap between the previous section and the district name */
+            padding: 0;  /* Ensure no extra padding */
+        }
+        table {
+            margin: 0 auto;
+            font-family: Calibri;
+            font-size: 12pt;
+        }
+        th, td {
+            border: 1pt solid black;
+            padding: 5px;
+        }
+        .district-row {
+            font-weight: bold;
+            text-align: center;
+            background-color: #f0f0f0;
+            font-size: 12pt;  /* Larger font for district name */
+        }
     </style>
 </head>
 <body>
 '''
 
-# Iterate over each district to create district-wise tables
+# Add the table structure and handle district headers inside the table
+html_output += '<table>\n'
+html_output += '<thead>\n'
+
+# Add column headers
+html_output += '''
+    <tr>
+        <th>S.No.</th>
+        <th>STATIONS</th>
+        <th>TYPE</th>
+        <th>RF</th>
+        <th>MIN T</th>
+        <th>MAX T</th>
+        <th>TEMP</th>
+        <th>RH (%)</th>
+        <th>WD</th>
+        <th>WS</th>
+        <th>MSLP</th>
+        <th>BAT</th>
+        <th>GPS</th>
+    </tr>
+'''
+
+html_output += '</thead>\n'
+html_output += '<tbody>\n'
+
+# Iterate over each district to add rows with district names as row headers
+s_no_counter = 1
 for district in df['DISTRICT'].unique():
-    html_output += f'<h2>DISTRICT: {district}</h2>\n'
+    # Add a row for the district header spanning all columns before the district data
+    html_output += f'<tr class="district-row"><td colspan="13">DISTRICT: {district}</td></tr>\n'
     
     # Filter rows for the current district
     district_df = df[df['DISTRICT'] == district].reset_index(drop=True)
@@ -789,27 +830,29 @@ for district in df['DISTRICT'].unique():
     # Apply styles to the filtered district DataFrame
     styled_district_df = district_df.style \
         .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid', 'text-align': "left"}) \
-        .set_table_styles([{'selector': 'th', 'props': [('border', '1pt solid black')]}]) \
         .map(neg_val, subset=['MIN T', 'MAX T']) \
         .map(color_range, subset=['RF']) \
         .map(bat_val, subset=['BAT']) \
-        .map(gps_val, subset=['GPS']) \
-        .hide(axis='index')
+        .map(gps_val, subset=['GPS'])
     
-    # Convert the styled district DataFrame to HTML and center-align the table
-    district_html = styled_district_df.format(precision=1, na_rep="").to_html()  # Render styled DataFrame to HTML
-    
-    # Inject the styled HTML for the current district into the final HTML
-    html_output += f'<div style="text-align: center;">{district_html}</div>'
-    html_output += '<br><br>\n'
+    # Convert the styled DataFrame to HTML for the current district and add it to the output
+    for idx, row in district_df.iterrows():
+        html_output += '<tr>'
+        html_output += f'<td>{s_no_counter}</td>'  # S.No. (use running counter across districts)
+        for col in district_df.columns:
+            if col != 'S.No.':  # Skip 'S.No.' as it's handled separately
+                html_output += f'<td>{row[col]}</td>'
+        html_output += '</tr>\n'
+        s_no_counter += 1
 
+html_output += '</tbody>\n'
+html_output += '</table>\n'
 html_output += '</body></html>'
 
 # Save the final HTML output to a file
 combined_html_file = 'combined_table.html'
 with open(combined_html_file, 'w') as f:
     f.write(html_output)
-
 
 # Convert the combined HTML file to a PDF
 pdf_file = 'styled_rainfall_with_borders.pdf'
