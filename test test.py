@@ -19,6 +19,7 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 import re
+from weasyprint import HTML, CSS
 
 
 print('Creating required date and time')
@@ -737,7 +738,7 @@ def color_range(val):
 
 def bat_val(val):
     try:
-        bat_value = float(val.split('\n')[0]) if isinstance(val, str) else float(val)
+        bat_value = float(val.split('<br>')[0]) if isinstance(val, str) else float(val)
         return 'border: 2px solid red; border-radius: 50%; padding: 2px; display: inline-block;' if bat_value < 11 else ''
     except (ValueError, IndexError):
         return ''
@@ -748,8 +749,6 @@ def gps_val(val):
 
 # Replace '\n' with '<br>' for proper line breaks in HTML
 df = df.map(lambda x: x.replace('\n', '<br>') if isinstance(x, str) else x)
-
-
 
 # Create the HTML structure to center the table and handle district-wise display
 html_output = '''
@@ -763,7 +762,7 @@ html_output = '''
             text-align: center;
             font-size: 8pt;  /* Reduce font size */
             margin-bottom: 0px;  /* Decrease gap between name and table */
-            margin-top: 00px;  /* Adjust the gap between the previous section and the district name */
+            margin-top: 0px;  /* Adjust the gap between the previous section and the district name */
             padding: 0;  /* Ensure no extra padding */
         }
         table {
@@ -829,21 +828,29 @@ for district in df['DISTRICT'].unique():
     # Drop the 'DISTRICT' column
     district_df = district_df.drop(columns=["DISTRICT"])
     
-    # Apply styles to the filtered district DataFrame
-    styled_district_df = district_df.style \
-        .set_properties(**{'font-family': "Calibri", 'font-size': '12pt', 'border': '1pt solid', 'text-align': "left"}) \
-        .map(neg_val, subset=['MIN T', 'MAX T']) \
-        .map(color_range, subset=['RF']) \
-        .map(bat_val, subset=['BAT']) \
-        .map(gps_val, subset=['GPS'])
-    
-    # Convert the styled DataFrame to HTML for the current district and add it to the output
+    # Iterate over rows and apply the styles inline
     for idx, row in district_df.iterrows():
         html_output += '<tr>'
         html_output += f'<td>{s_no_counter}</td>'  # S.No. (use running counter across districts)
         for col in district_df.columns:
             if col != 'S.No.':  # Skip 'S.No.' as it's handled separately
-                html_output += f'<td>{row[col]}</td>'
+                
+                # Apply styles manually
+                styles = ''
+                content = row[col]
+                
+                if col == 'MIN T' or col == 'MAX T':
+                    styles = neg_val(row[col])
+                elif col == 'RF':
+                    styles = color_range(row[col])
+                elif col == 'BAT':
+                    bat_symbol = bat_val(row[col])
+                    content = f'{row[col]} {bat_symbol}'  # Add symbol after the value
+                elif col == 'GPS':
+                    styles = gps_val(row[col])
+                
+                html_output += f'<td style="{styles}">{content}</td>'
+        
         html_output += '</tr>\n'
         s_no_counter += 1
 
@@ -853,20 +860,13 @@ html_output += '</body></html>'
 
 # Save the final HTML output to a file
 combined_html_file = 'combined_table.html'
-with open(combined_html_file, 'w') as f:
+with open(combined_html_file, 'w', encoding='utf-8') as f:
     f.write(html_output)
 
-# Convert the combined HTML file to a PDF
-pdf_file = 'styled_rainfall_with_borders.pdf'
-options = {
-    'margin-top': '3mm',
-    'margin-bottom': '3mm',
-    'margin-left': '5mm',
-    'margin-right': '5mm',
-    'page-size': 'A4',
-}
+# Convert the combined HTML to PDF using WeasyPrint
+pdf_file = 'styled_rainfall_with_weasyprint.pdf'
 
-# Convert combined HTML to PDF
-pdfkit.from_file(combined_html_file, pdf_file, options=options)
+# WeasyPrint does not take options like pdfkit, but it respects the CSS defined in the HTML.
+HTML(string=html_output).write_pdf(pdf_file)
 
 exit()
