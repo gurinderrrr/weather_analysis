@@ -693,15 +693,112 @@ arg_df_tot=len(arg_mh)
 arg_df_rep=len(arg_mh)-len(df[(df['TYPE'] == 'ARG') & (df['null'] == 3)])
 
 
-# Replace NaN values with empty strings across all columns
-df = df.fillna('')
+
 
 # Reorder columns as needed
 df = df[['S.No.', 'STATIONS','DISTRICT','TYPE', 'RF', 'MIN T', 'MAX T', 'TEMP', 'RH (%)', 'WD', 'WS', 'MSLP', 'BAT', 'GPS']]
 
-# Convert the DataFrame to an HTML table
-html_table = df.to_html(index=False)
+# Replace NaN values with empty strings across all columns
+df = df.fillna('')
 
-# Save the HTML table to a file
-with open('table_output.html', 'w') as f:
-    f.write(html_table)
+# Replace \n with <br> in the entire DataFrame
+df = df.map(lambda x: str(x).replace('\n', '<br>') if isinstance(x, str) else x)
+
+# Create the HTML structure to center the table and handle district-wise display
+html_output = '''
+<html>
+<head>
+    <style>
+        @media print {
+            thead {display: table-header-group;} /* Repeat table headers on each page */
+        }
+        h2 {
+            text-align: center;
+            font-size: 8pt;  /* Reduce font size */
+            margin-bottom: 0px;  /* Decrease gap between name and table */
+            margin-top: 00px;  /* Adjust the gap between the previous section and the district name */
+            padding: 0;  /* Ensure no extra padding */
+        }
+        table {
+            margin: 0 auto;
+            font-family: Calibri;
+            font-size: 8pt;
+            border-collapse: collapse;  /* Collapse borders to save space */
+            /*width: 100%;   Use full width of the page */
+        }
+        th, td {
+            border: 1pt solid black;
+            padding: 5px;
+        }
+        .district-row {
+            font-weight: bold;
+            text-align: center;
+            background-color: #f0f0f0;
+            font-size: 8pt;  /* Larger font for district name */
+        }
+    </style>
+</head>
+<body>
+'''
+
+# Add the table structure and handle district headers inside the table
+html_output += '<table>\n'
+html_output += '<thead>\n'
+
+# Add column headers
+html_output += '''
+    <tr>
+        <th>S.No.</th>
+        <th>STATIONS</th>
+        <th>TYPE</th>
+        <th>RF</th>
+        <th>MIN T</th>
+        <th>MAX T</th>
+        <th>TEMP</th>
+        <th>RH (%)</th>
+        <th>WD</th>
+        <th>WS</th>
+        <th>MSLP</th>
+        <th>BAT</th>
+        <th>GPS</th>
+    </tr>
+'''
+
+html_output += '</thead>\n'
+html_output += '<tbody>\n'
+
+# Iterate over each district to add rows with district names as row headers
+s_no_counter = 1
+for district in df['DISTRICT'].unique():
+    # Add a row for the district header spanning all columns before the district data
+    html_output += f'<tr class="district-row"><td colspan="13">DISTRICT: {district}</td></tr>\n'
+    
+    # Filter rows for the current district
+    district_df = df[df['DISTRICT'] == district].reset_index(drop=True)
+    
+    # Set the S.No. column to the correct serial numbers for the district
+    district_df['S.No.'] = district_df.index + 1
+    
+    # Drop the 'DISTRICT' column
+    district_df = district_df.drop(columns=["DISTRICT"])
+    
+    
+    # Convert the styled DataFrame to HTML for the current district and add it to the output
+    for idx, row in district_df.iterrows():
+        html_output += '<tr>'
+        html_output += f'<td>{s_no_counter}</td>'  # S.No. (use running counter across districts)
+        for col in district_df.columns:
+            if col != 'S.No.':  # Skip 'S.No.' as it's handled separately
+                html_output += f'<td>{row[col]}</td>'
+        html_output += '</tr>\n'
+        s_no_counter += 1
+
+html_output += '</tbody>\n'
+html_output += '</table>\n'
+html_output += '</body></html>'
+
+# Save the final HTML output to a file
+combined_html_file = 'combined_table.html'
+district_df.to_html(combined_html_file, index=False, escape=False)
+with open(combined_html_file, 'w') as f:
+    f.write(html_output)
