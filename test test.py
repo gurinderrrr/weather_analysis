@@ -791,39 +791,49 @@ html_output += '''
 html_output += '</thead>\n'
 html_output += '<tbody>\n'
 
-# Iterate over each district to add rows with district names as row headers
+# Use a continuous counter for S.No. across all districts
 s_no_counter = 1
+
+# Iterate through each district
 for district in df['DISTRICT'].unique():
     # Add a row for the district header spanning all columns before the district data
     html_output += f'<tr class="district-row"><td colspan="13">DISTRICT: {district}</td></tr>\n'
     
-    # Filter rows for the current district
+    # Filter the DataFrame for the current district
     district_df = df[df['DISTRICT'] == district].reset_index(drop=True)
     
-    # Set the S.No. column to the correct serial numbers for the district
-    district_df['S.No.'] = district_df.index + 1
-    
-    # Drop the 'DISTRICT' column
-    district_df = district_df.drop(columns=["DISTRICT"])
-    
-    
-    # Convert the styled DataFrame to HTML for the current district and add it to the output
+    # Iterate through the rows of the current district
     for idx, row in district_df.iterrows():
         html_output += '<tr>'
-        html_output += f'<td>{s_no_counter}</td>'  # S.No. (use running counter across districts)
-        for col in district_df.columns:
-            if col == 'BAT':
-                try:
-                    bat_value = float(row[col])  # Try converting the value to float
-                    if bat_value < 11:
-                        html_output += f'<td><span class="error">{bat_value}</span></td>'
-                    else:
-                        html_output += f'<td>{bat_value}</td>'
-                except ValueError:
-                    # If conversion fails, just print the value as is (handle non-numeric data)
-                    html_output += f'<td>{row[col]}</td>'
+        
+        # Add the continuous S.No. for each row
+        html_output += f'<td>{s_no_counter}</td>'
+        
+        # Add the rest of the columns, excluding 'DISTRICT'
+        html_output += f'<td>{row["STATIONS"]}</td>'
+        html_output += f'<td>{row["TYPE"]}</td>'
+        html_output += f'<td>{row["RF"]}</td>'
+        html_output += f'<td>{row["MINT"]}</td>'
+        html_output += f'<td>{row["MAXT"]}</td>'
+        html_output += f'<td>{row["TEMP"]}</td>'
+        html_output += f'<td>{row["RH (%)"]}</td>'
+        html_output += f'<td>{row["WD"]}</td>'
+        html_output += f'<td>{row["WS"]}</td>'
+        html_output += f'<td>{row["MSLP"]}</td>'
+        
+        # Add the BAT column with error checking
+        try:
+            bat_value = float(row["BAT"])  # Convert to float
+            if bat_value < 11:
+                html_output += f'<td><span class="error">{bat_value}</span></td>'
             else:
-                html_output += f'<td>{row[col]}</td>'
+                html_output += f'<td>{bat_value}</td>'
+        except ValueError:
+            # If conversion fails, print the value as is
+            html_output += f'<td>{row["BAT"]}</td>'
+        
+        # Add the GPS column
+        html_output += f'<td>{row["GPS"]}</td>'
         
         html_output += '</tr>\n'
         s_no_counter += 1
