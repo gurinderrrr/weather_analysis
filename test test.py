@@ -724,22 +724,26 @@ html_output = '''
         }
         h2 {
             text-align: center;
-            font-size: 8pt;  /* Reduce font size */
+            font-size: 10pt;  /* Reduce font size */
             margin-bottom: 0px;  /* Decrease gap between name and table */
             margin-top: 00px;  /* Adjust the gap between the previous section and the district name */
             padding: 0;  /* Ensure no extra padding */
         }
         table {
             margin: 0 auto;
-            font-family: Calibri;
-            font-size: 8pt;
+            /*font-family: Calibri;*/
+            /*font-size: 8pt;*/
             border-collapse: collapse;  /* Collapse borders to save space */
-            /*width: 100%;   Use full width of the page */
+            width: 100%;   /*Use full width of the page */
         }
-        th, td {
+        td {
             border: 1pt solid black;
             padding: 0; /* Remove padding to eliminate space */
             text-align: center;
+            font-size: 16pt;
+        }
+        th{
+            font-size: 16pt;
         }
         .district-row {
             font-weight: bold;
@@ -756,9 +760,9 @@ html_output = '''
             color: red;  /* Optional: Change the text color to red */
             font-weight: bold;
             text-align: center;
-            width: 20px; /* Optional: Control size */
-            height: 20px; /* Optional: Control size */
-            line-height: 16px; /* Optional: Center text vertically */
+            /*width: 20px;  Optional: Control size */
+            /*height: 20px;  Optional: Control size */
+            /*line-height: 16px;  Optional: Center text vertically */
         }
     </style>
 </head>
