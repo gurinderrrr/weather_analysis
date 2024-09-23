@@ -714,86 +714,108 @@ df = df.fillna('')
 # Replace \n with <br> in the entire DataFrame
 df = df.map(lambda x: str(x).replace('\n', '<br>') if isinstance(x, str) else x)
 
-# Create the HTML structure to center the table and handle district-wise display
-html_output = '''
+# Handle the string interpolation for the header content
+header_content = f'{d0_2} 3UTC to {d1_2} 3UTC'
+
+html_output = f'''
 <html>
 <head>
     <style>
-        @media print {
-            thead {display: table-header-group;} /* Repeat table headers on each page */
-        }
-        h2 {
+        /* General header styling */
+        header {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 0.5in;  /* Adjust height as needed */
             text-align: center;
-            font-size: 10pt;  /* Reduce font size */
-            margin-bottom: 0px;  /* Decrease gap between name and table */
-            margin-top: 00px;  /* Adjust the gap between the previous section and the district name */
-            padding: 0;  /* Ensure no extra padding */
-        }
-        table {
-            margin: 0 auto;
-            /*font-family: Calibri;*/
-            /*font-size: 8pt;*/
+            font-size: 14pt;  /* Adjust font size */
+            font-weight: bold;  /* Make text bold */
+            color: black;
+            background-color: white;
+            margin: 0;
+            z-index: 999;  /* Ensure header is above the table */
+        }}
+
+        /* Table styling */
+        table {{
+            margin-top: 100px;  /* Ensure space between header and table */
+            padding-top: 0px;  /* Remove any top padding */
             border-collapse: collapse;  /* Collapse borders to save space */
-            width: 100%;   /*Use full width of the page */
-        }
-        td {
+            width: 100%;  /* Full width for table */
+        }}
+
+        td, th {{
             border: 1pt solid black;
-            padding: 0; /* Remove padding to eliminate space */
+            padding: 2px;  /* Slight padding for clarity */
             text-align: center;
-            font-size: 16pt;
-        }
-        th{
-            font-size: 16pt;
-        }
-        .district-row {
+        }}
+
+        th {{
+            font-size: 12pt;  /* Maintain header font size */
+        }}
+
+        /* District row styling */
+        .district-row {{
             font-weight: bold;
             text-align: center;
             background-color: #f0f0f0;
-            font-size: 8pt;  /* Larger font for district name */
-        }
-            /* Style to highlight battery errors */
-        .error {
+            font-size: 11pt;  /* Font size for district name */
+        }}
+
+        /* Style for battery error (red circle) */
+        .error {{
             display: inline-block;
             padding: 2px;
             border: 1px solid red;
-            border-radius: 50%;  /* Creates a circular shape */
-            color: red;  /* Optional: Change the text color to red */
+            border-radius: 50%;  /* Circular shape */
+            color: red;
             font-weight: bold;
-            text-align: center;
-            /*width: 20px;  Optional: Control size */
-            /*height: 20px;  Optional: Control size */
-            /*line-height: 16px;  Optional: Center text vertically */
-        }
+        }}
+
+        /* Ensure proper printing layout */
+        @media print {{
+            @page {{
+                margin-top: 1in;  /* Add extra margin for header */
+            }}
+
+            header {{
+                position: fixed;
+                top: 0;
+            }}
+
+            body {{
+                margin-top: 1.5in;  /* Ensure space between header and table */
+            }}
+        }}
     </style>
 </head>
 <body>
+
+<header>
+    {header_content}
+</header>
+
+<table>
+    <thead>
+        <tr>
+            <th>S.No.</th>
+            <th>STATIONS</th>
+            <th>TYPE</th>
+            <th>RF</th>
+            <th>MIN T</th>
+            <th>MAX T</th>
+            <th>TEMP</th>
+            <th>RH (%)</th>
+            <th>WD</th>
+            <th>WS</th>
+            <th>MSLP</th>
+            <th>BAT</th>
+            <th>GPS</th>
+        </tr>
+    </thead>
+    <tbody>
 '''
-
-# Add the table structure and handle district headers inside the table
-html_output += '<table>\n'
-html_output += '<thead>\n'
-
-# Add column headers
-html_output += '''
-    <tr>
-        <th>S.No.</th>
-        <th>STATIONS</th>
-        <th>TYPE</th>
-        <th>RF</th>
-        <th>MIN T</th>
-        <th>MAX T</th>
-        <th>TEMP</th>
-        <th>RH (%)</th>
-        <th>WD</th>
-        <th>WS</th>
-        <th>MSLP</th>
-        <th>BAT</th>
-        <th>GPS</th>
-    </tr>
-'''
-
-html_output += '</thead>\n'
-html_output += '<tbody>\n'
 
 # Use a continuous counter for S.No. across all districts
 s_no_counter = 1
@@ -812,42 +834,69 @@ for district in df['DISTRICT'].unique():
         
         # Add the continuous S.No. for each row
         html_output += f'<td>{s_no_counter}</td>'
-        
-        # Add the rest of the columns, excluding 'DISTRICT'
         html_output += f'<td>{row["STATIONS"]}</td>'
         html_output += f'<td>{row["TYPE"]}</td>'
-        html_output += f'<td>{row["RF"]}</td>'
-        html_output += f'<td>{row["MINT"]}</td>'
-        html_output += f'<td>{row["MAXT"]}</td>'
-        html_output += f'<td>{row["TEMP"]}</td>'
-        html_output += f'<td>{row["RH (%)"]}</td>'
+
+        # RF column with error checking
+        try:
+            rf_value = float(row["RF"])
+            html_output += f'<td><span class="error">{rf_value}</span></td>' if rf_value % 0.5 != 0 else f'<td>{rf_value}</td>'
+        except ValueError:
+            html_output += f'<td>{row["RF"]}</td>'
+
+        # MIN T column with error checking
+        try:
+            min_value = float(row["MINT"])
+            html_output += f'<td><span class="error">{min_value}</span></td>' if min_value < 0 else f'<td>{min_value}</td>'
+        except ValueError:
+            html_output += f'<td>{row["MINT"]}</td>'
+
+        # MAX T column with error checking
+        try:
+            max_value = float(row["MAXT"])
+            html_output += f'<td><span class="error">{max_value}</span></td>' if max_value < 0 else f'<td>{max_value}</td>'
+        except ValueError:
+            html_output += f'<td>{row["MAXT"]}</td>'
+
+        # TEMP column with error checking
+        try:
+            temp_value = float(row["TEMP"])
+            html_output += f'<td><span class="error">{temp_value}</span></td>' if temp_value < 0 else f'<td>{temp_value}</td>'
+        except ValueError:
+            html_output += f'<td>{row["TEMP"]}</td>'
+
+        # RH (%) column with error checking
+        try:
+            rh_value = float(row["RH (%)"])
+            html_output += f'<td><span class="error">{rh_value}</span></td>' if rh_value > 100 else f'<td>{rh_value}</td>'
+        except ValueError:
+            html_output += f'<td>{row["RH (%)"]}</td>'
+
+        # Add other columns
         html_output += f'<td>{row["WD"]}</td>'
         html_output += f'<td>{row["WS"]}</td>'
         html_output += f'<td>{row["MSLP"]}</td>'
         
-        # Add the BAT column with error checking
+        # BAT column with error checking
         try:
-            bat_value = float(row["BAT"])  # Convert to float
-            if bat_value < 11:
-                html_output += f'<td><span class="error">{bat_value}</span></td>'
-            else:
-                html_output += f'<td>{bat_value}</td>'
+            bat_value = float(row["BAT"])
+            html_output += f'<td><span class="error">{bat_value}</span></td>' if bat_value < 11 else f'<td>{bat_value}</td>'
         except ValueError:
-            # If conversion fails, print the value as is
             html_output += f'<td>{row["BAT"]}</td>'
         
-        # Add the GPS column
-        html_output += f'<td>{row["GPS"]}</td>'
+        # GPS column with error checking for "U" values
+        html_output += f'<td><span class="error">{row["GPS"]}</span></td>' if row["GPS"] == "U" else f'<td>{row["GPS"]}</td>'
         
         html_output += '</tr>\n'
         s_no_counter += 1
 
-html_output += '</tbody>\n'
-html_output += '</table>\n'
-html_output += '</body></html>'
+html_output += '''
+    </tbody>
+</table>
+</body></html>
+'''
 
 # Save the final HTML output to a file
 combined_html_file = 'combined_table.html'
-district_df.to_html(combined_html_file, index=False, escape=False)
 with open(combined_html_file, 'w') as f:
     f.write(html_output)
