@@ -714,35 +714,20 @@ df = df.fillna('')
 # Replace \n with <br> in the entire DataFrame
 df = df.map(lambda x: str(x).replace('\n', '<br>') if isinstance(x, str) else x)
 
-# Handle the string interpolation for the header content
 header_content = f'{d0_2} 3UTC to {d1_2} 3UTC'
 
 html_output = f'''
 <html>
 <head>
     <style>
-        /* General header styling */
-        header {{
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 0.5in;  /* Adjust height as needed */
-            text-align: center;
-            font-size: 14pt;  /* Adjust font size */
-            font-weight: bold;  /* Make text bold */
-            color: black;
-            background-color: white;
-            margin: 0;
-            z-index: 999;  /* Ensure header is above the table */
-        }}
-
         /* Table styling */
         table {{
-            margin-top: 100px;  /* Ensure space between header and table */
+            margin-top: 0px;  /* Ensure space between header and table */
             padding-top: 0px;  /* Remove any top padding */
             border-collapse: collapse;  /* Collapse borders to save space */
             width: 100%;  /* Full width for table */
+            page-break-inside: auto;  /* Ensure proper table page breaks */
+            font-size: 10pt;  /* Maintain header font size */
         }}
 
         td, th {{
@@ -752,15 +737,19 @@ html_output = f'''
         }}
 
         th {{
-            font-size: 12pt;  /* Maintain header font size */
+            font-size: 10pt;  /* Maintain header font size */
         }}
+         td {{
+            font-size: 9pt;  /* Maintain header font size */
+        }}
+
 
         /* District row styling */
         .district-row {{
             font-weight: bold;
             text-align: center;
             background-color: #f0f0f0;
-            font-size: 11pt;  /* Font size for district name */
+            font-size: 10pt;  /* Font size for district name */
         }}
 
         /* Style for battery error (red circle) */
@@ -776,28 +765,32 @@ html_output = f'''
         /* Ensure proper printing layout */
         @media print {{
             @page {{
-                margin-top: 1in;  /* Add extra margin for header */
+                margin-top: 0.2in;  /* Add extra margin for header */
             }}
 
-            header {{
-                position: fixed;
-                top: 0;
+            thead {{
+                display: table-header-group;  /* Ensure thead repeats on every page */
+            }}
+
+            table {{
+                margin-top: 0.2in;  /* Ensure consistent space on all pages */
             }}
 
             body {{
-                margin-top: 1.5in;  /* Ensure space between header and table */
+                margin-top: 0.2in;  /* Ensure space between header and table */
             }}
         }}
     </style>
 </head>
 <body>
 
-<header>
-    {header_content}
-</header>
-
 <table>
     <thead>
+        <tr>
+            <th colspan="13" style="text-align: center; font-size: 10pt; font-weight: bold;">
+                {header_content} <!-- Repeat this header content across all pages -->
+            </th>
+        </tr>
         <tr>
             <th>S.No.</th>
             <th>STATIONS</th>
