@@ -732,7 +732,7 @@ html_output = f'''
 
         td, th {{
             border: 1pt solid black;
-            padding: 2px;  /* Slight padding for clarity */
+            /*padding: 2px;   Slight padding for clarity */
             text-align: center;
         }}
 
@@ -755,7 +755,7 @@ html_output = f'''
         /* Style for battery error (red circle) */
         .error {{
             display: inline-block;
-            padding: 2px;
+            /*padding: 2px;*/
             border: 1px solid red;
             border-radius: 50%;  /* Circular shape */
             color: red;
