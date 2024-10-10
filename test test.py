@@ -893,3 +893,19 @@ html_output += '''
 combined_html_file = 'combined_table.html'
 with open(combined_html_file, 'w') as f:
     f.write(html_output)
+
+
+# Convert the combined HTML file to a PDF
+pdf_file = 'styled_rainfall_with_borders.pdf'
+options = {
+    'margin-top': '3mm',
+    'margin-bottom': '3mm',
+    'margin-left': '5mm',
+    'margin-right': '5mm',
+    'page-size': 'A4',
+}
+
+# Convert combined HTML to PDF
+pdfkit.from_file(combined_html_file, pdf_file, options=options)
+
+exit()
