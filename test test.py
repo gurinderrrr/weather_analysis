@@ -732,17 +732,15 @@ html_output = f'''
 
         td, th {{
             border: 1pt solid black;
-            /*padding: 2px;   Slight padding for clarity */
             text-align: center;
         }}
 
         th {{
-            font-size: 10pt;  /* Maintain header font size */
-        }}
-         td {{
             font-size: 9pt;  /* Maintain header font size */
         }}
-
+        td {{
+            font-size: 9pt;  /* Maintain header font size */
+        }}
 
         /* District row styling */
         .district-row {{
@@ -755,7 +753,6 @@ html_output = f'''
         /* Style for battery error (red circle) */
         .error {{
             display: inline-block;
-            /*padding: 2px;*/
             border: 1px solid red;
             border-radius: 50%;  /* Circular shape */
             color: red;
@@ -766,6 +763,7 @@ html_output = f'''
         @media print {{
             @page {{
                 margin-top: 0.2in;  /* Add extra margin for header */
+                margin-bottom: 0.5in;  /* Add extra margin for footer */
             }}
 
             thead {{
@@ -779,16 +777,37 @@ html_output = f'''
             body {{
                 margin-top: 0.2in;  /* Ensure space between header and table */
             }}
+
+            /* Page number at the bottom */
+            footer {{
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                text-align: right;
+                font-size: 9pt;
+                color: #000;
+            }}
+
+            /* Add counter for the page */
+            footer::after {{
+                content: "Page " counter(page);
+            }}
+        }}
+
+        /* Add page numbering counter */
+        body {{
+            counter-reset: page;
         }}
     </style>
 </head>
 <body>
 
+<!-- Table and header content -->
 <table>
     <thead>
         <tr>
             <th colspan="13" style="text-align: center; font-size: 10pt; font-weight: bold;">
-                {header_content} <!-- Repeat this header content across all pages -->
+                {header_content} (Page <span class="page-number"></span>)
             </th>
         </tr>
         <tr>
@@ -883,10 +902,16 @@ for district in df['DISTRICT'].unique():
         html_output += '</tr>\n'
         s_no_counter += 1
 
+
 html_output += '''
     </tbody>
 </table>
-</body></html>
+
+<!-- Footer for page numbers -->
+<footer></footer>
+
+</body>
+</html>
 '''
 
 # Save the final HTML output to a file
