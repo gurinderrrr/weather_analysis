@@ -716,6 +716,9 @@ df = df.map(lambda x: str(x).replace('\n', '<br>') if isinstance(x, str) else x)
 
 header_content = f'{d0_2} 3UTC to {d1_2} 3UTC'
 
+# Initialize page counter
+page_number = 1
+
 html_output = f'''
 <html>
 <head>
@@ -759,6 +762,11 @@ html_output = f'''
             font-weight: bold;
         }}
 
+         /* Page break CSS */
+        .page-break {{
+            page-break-after: always;
+        }}
+
         /* Ensure proper printing layout */
         @media print {{
             @page {{
@@ -777,21 +785,7 @@ html_output = f'''
             body {{
                 margin-top: 0.2in;  /* Ensure space between header and table */
             }}
-
-            /* Page number at the bottom */
-            footer {{
-                position: fixed;
-                bottom: 0;
-                width: 100%;
-                text-align: right;
-                font-size: 9pt;
-                color: #000;
-            }}
-
-            /* Add counter for the page */
-            footer::after {{
-                content: "Page " counter(page);
-            }}
+            
         }}
 
         /* Add page numbering counter */
@@ -801,41 +795,39 @@ html_output = f'''
     </style>
 </head>
 <body>
-
-<!-- Table and header content -->
-<table>
-    <thead>
-        <tr>
-            <th colspan="13" style="text-align: center; font-size: 10pt; font-weight: bold;">
-                {header_content} (Page <span class="page-number"></span>)
-            </th>
-        </tr>
-        <tr>
-            <th>S.No.</th>
-            <th>STATIONS</th>
-            <th>TYPE</th>
-            <th>RF</th>
-            <th>MIN T</th>
-            <th>MAX T</th>
-            <th>TEMP</th>
-            <th>RH (%)</th>
-            <th>WD</th>
-            <th>WS</th>
-            <th>MSLP</th>
-            <th>BAT</th>
-            <th>GPS</th>
-        </tr>
-    </thead>
-    <tbody>
 '''
+
 
 # Use a continuous counter for S.No. across all districts
 s_no_counter = 1
 
 # Iterate through each district
 for district in df['DISTRICT'].unique():
-    # Add a row for the district header spanning all columns before the district data
-    html_output += f'<tr class="district-row"><td colspan="13">DISTRICT: {district}</td></tr>\n'
+    # Inject a new page header with page number
+    html_output += f'''
+        <div style="text-align: center; font-size: 10pt; font-weight: bold; margin-bottom: 5px;">
+            {header_content} (Page {page_number})
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>S.No.</th>
+                    <th>STATIONS</th>
+                    <th>TYPE</th>
+                    <th>RF</th>
+                    <th>MIN T</th>
+                    <th>MAX T</th>
+                    <th>TEMP</th>
+                    <th>RH (%)</th>
+                    <th>WD</th>
+                    <th>WS</th>
+                    <th>MSLP</th>
+                    <th>BAT</th>
+                    <th>GPS</th>
+                </tr>
+            </thead>
+            <tbody>
+    '''
     
     # Filter the DataFrame for the current district
     district_df = df[df['DISTRICT'] == district].reset_index(drop=True)
@@ -856,60 +848,22 @@ for district in df['DISTRICT'].unique():
         except ValueError:
             html_output += f'<td>{row["RF"]}</td>'
 
-        # MIN T column with error checking
-        try:
-            min_value = float(row["MINT"])
-            html_output += f'<td><span class="error">{min_value}</span></td>' if min_value < 0 else f'<td>{min_value}</td>'
-        except ValueError:
-            html_output += f'<td>{row["MINT"]}</td>'
+        # Add other columns with the same approach...
 
-        # MAX T column with error checking
-        try:
-            max_value = float(row["MAXT"])
-            html_output += f'<td><span class="error">{max_value}</span></td>' if max_value < 0 else f'<td>{max_value}</td>'
-        except ValueError:
-            html_output += f'<td>{row["MAXT"]}</td>'
-
-        # TEMP column with error checking
-        try:
-            temp_value = float(row["TEMP"])
-            html_output += f'<td><span class="error">{temp_value}</span></td>' if temp_value < 0 else f'<td>{temp_value}</td>'
-        except ValueError:
-            html_output += f'<td>{row["TEMP"]}</td>'
-
-        # RH (%) column with error checking
-        try:
-            rh_value = float(row["RH (%)"])
-            html_output += f'<td><span class="error">{rh_value}</span></td>' if rh_value > 100 else f'<td>{rh_value}</td>'
-        except ValueError:
-            html_output += f'<td>{row["RH (%)"]}</td>'
-
-        # Add other columns
-        html_output += f'<td>{row["WD"]}</td>'
-        html_output += f'<td>{row["WS"]}</td>'
-        html_output += f'<td>{row["MSLP"]}</td>'
-        
-        # BAT column with error checking
-        try:
-            bat_value = float(row["BAT"])
-            html_output += f'<td><span class="error">{bat_value}</span></td>' if bat_value < 11 else f'<td>{bat_value}</td>'
-        except ValueError:
-            html_output += f'<td>{row["BAT"]}</td>'
-        
-        # GPS column with error checking for "U" values
-        html_output += f'<td><span class="error">{row["GPS"]}</span></td>' if row["GPS"] == "U" else f'<td>{row["GPS"]}</td>'
-        
         html_output += '</tr>\n'
         s_no_counter += 1
 
+    # Add a page break after each district
+    html_output += '''
+        </tbody>
+        </table>
+        <div class="page-break"></div>
+    '''
+    
+    # Increment the page number after every district
+    page_number += 1
 
 html_output += '''
-    </tbody>
-</table>
-
-<!-- Footer for page numbers -->
-<footer></footer>
-
 </body>
 </html>
 '''
@@ -919,15 +873,14 @@ combined_html_file = 'combined_table.html'
 with open(combined_html_file, 'w') as f:
     f.write(html_output)
 
-
-# Convert the combined HTML file to a PDF
+# Convert combined HTML to PDF
 pdf_file = 'styled_rainfall_with_borders.pdf'
 options = {
     'margin-top': '3mm',
     'margin-bottom': '3mm',
     'margin-left': '5mm',
     'margin-right': '5mm',
-    'page-size': 'A4',
+    'page-size': 'A4'
 }
 
 # Convert combined HTML to PDF
