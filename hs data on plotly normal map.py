@@ -23,7 +23,7 @@ def color_range(rf_value):
     elif rf_value > 204.4:  # Extreme high rainfall
         return '#FF0000'
     else:
-        return '#FFFFFF'
+        return ''
 
 # Load the Excel file
 file_path = 'C:\\Users\\hp\\Desktop\\AUGUST 2024 edited aa.xls'  # Path to the file
@@ -70,7 +70,7 @@ excel_file_path = 'C:\\Users\\hp\\Desktop\\august_2024_rainfall_long_format.xlsx
 df = pd.read_excel(excel_file_path)
 
 # Step 2: Read the shapefile
-shapefile_path = "C:\\Users\\hp\\Desktop\\gurinder\\filtered shape files\\maharashtra district excluding vidarbha.shp"
+shapefile_path = "C:\\Users\\hp\\Desktop\\gurinder\\filtered shape files\\maharashtra all districts.shp"
 gdf = gpd.read_file(shapefile_path)
 
 # Convert the GeoDataFrame to GeoJSON format
@@ -131,21 +131,76 @@ for date in df_melted['Date'].unique():
 
 
 
-     # Create the plot using latitude and longitude directly from the Excel data
-    fig = px.scatter_mapbox(
-        daily_data,
-        lat='LAT',
-        lon='LONG',
-        hover_name='Station',  # Show station names on hover
-        hover_data={'RF': True, 'LAT': False, 'LONG': False, 'color': False},  # Show only RF and Station in hover
-        mapbox_style='white-bg',
-        center={'lat': gdf.geometry.centroid.y.mean(), 'lon': gdf.geometry.centroid.x.mean()},
-        zoom=5,  # Adjust the zoom level
-        opacity=1
-    )
-
+     # Plot rainfall data points using latitude and longitude from the Excel data
+    fig.add_trace(go.Scattermapbox(
+        lat=daily_data['LAT'],
+        lon=daily_data['LONG'],
+        mode='markers',
+        marker=dict(
+            color=daily_data['color'],  # Color based on RF values
+            size=10  # Marker size
+        ),
+        text=daily_data.apply(
+        lambda row: (
+            f"Station: {row['Station']}<br>"
+            f"Rainfall: {'DATA NOT AVAILABLE' if pd.isna(row['RF']) else f'{row['RF']} mm'}"
+        ), 
+        axis=1
+    ),
+    hoverinfo='text',
+    name="Rainfall Data Legend"  # Name this trace for the legend
+    ))
     # Manually specify the color for each marker using the 'color' column
     fig.update_traces(marker=dict(color=daily_data['color'], size=8))  # Adjust size as needed
+
+        # Add dummy traces for the legend with fixed colors
+    legend_colors = {
+        '<b>0mm <= RF <= 0.9mm</b>': '#71797E',
+        '<b>1mm <= RF <= 2.4mm</b>': '#ADFF2F',
+        '<b>2.5mm <= RF <= 15.5mm</b>': '#00FF00',
+        '<b>15.6mm <= RF <= 64.4mm</b>': '#00FFFF',
+        '<b>64.5mm <= RF <= 115.5mm</b>': '#FFFF00',
+        '<b>115.6mm <= RF <= 204.4mm</b>': '#FFA500',
+        '<b>RF > 204.4mm</b>': '#FF0000',
+        '<b>Data Not Available</b>': '#000000',
+        
+    }
+
+
+    # Add each color category as a dummy trace to the legend
+    for label, color in legend_colors.items():
+        fig.add_trace(go.Scattermapbox(
+            lon=[None],  # No actual points for these dummy traces
+            lat=[None],
+            mode='markers',
+            marker=dict(size=10, color=color),  # Use the specific color for each label
+            showlegend=True,
+            name=label
+        ))
+
+        # Center of the bounding box
+    bounds = gdf.total_bounds
+    center_lon = (bounds[0] + bounds[2]) / 2
+    center_lat = (bounds[1] + bounds[3]) / 2
+
+    # Set map layout
+    fig.update_layout(
+        mapbox=dict(
+            style='white-bg',  # No external map background
+            center=dict(lat=center_lat, lon=center_lon),
+        zoom=5.8  # Adjust the zoom level as needed
+        ),
+        showlegend=True,
+        margin={"r":0,"t":30,"l":0,"b":0},  # Adjusted top margin to make room for the title
+        #height=700  # Set height for better view
+        title={
+        'text': "Custom Map of GeoDataFrame",
+        'y':0.98,  # Adjust title position
+        'x':0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'
+    }   
+    )
 
     # Save the plot as an HTML file, ensuring the date is formatted properly
     fig.write_html(f'C:\\Users\\hp\\Desktop\\PLOTS\\rainfall_plot_{pd.to_datetime(date).strftime("%Y_%m_%d")}.html')
