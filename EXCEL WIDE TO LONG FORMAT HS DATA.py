@@ -1,29 +1,39 @@
 import pandas as pd
 
 # Load the Excel file
-df = pd.read_excel('C:\\Users\\hp\\Desktop\\AUGUST 2024 edited aa.xls')
+file_path = 'C:\\Users\\hp\\Desktop\\AUGUST 2024 edited aa.xls'  # Path to the file
+df = pd.read_excel(file_path)
 
-# Assume the first column is station names, and the rest are rainfall values for 31 days
-station_column = 'Station'
-lat_column = 'LAT'
-long_column = 'LONG'
-rainfall_columns = df.columns[3:]  # Rainfall data starts from the 4th column
 
-# Melt the dataframe to get each station's rainfall per date
-df_melted = df.melt(id_vars=[station_column, lat_column, long_column], 
-                    value_vars=rainfall_columns, 
-                    var_name='Date', value_name='Rainfall')
 
-# Add a datetime column if your original columns are named as 1, 2, 3, ... 31 for August
-df_melted['Date'] = pd.to_datetime(df_melted['Date'], format='%d').map(lambda x: x.replace(month=8, year=2023))
+# Filter out rows with invalid lat/long (e.g., 0.00 or 99.99)
+df_filtered = df[((df['LAT'] != 0) & (df['LONG'] != 0)) & ((df['LAT'] != 99.99) & (df['LONG'] != 99.99))]
 
-# Rearrange columns: Station, Date, Rainfall, Lat, Long
-df_melted = df_melted[[station_column, 'Date', 'Rainfall', lat_column, long_column]]
+df=df_filtered.copy()
+del df_filtered
 
-# Save df_melted as an Excel file
-df_melted.to_excel('C:\\Users\\hp\\Desktop\\transformed_data.xlsx', index=False)  # Adjust file name/path as needed
 
-# View the transformed DataFrame
-#print(df_melted)
+# Assign day numbers as column headers for the 31 rainfall columns
+day_columns = list(range(1, 32))  # Days 1 to 31 for August
+df.columns = ['Station'] + day_columns + ['LAT', 'LONG']
 
-# Now, df_melted contains the desired column order: Station, Date, Rainfall, Lat, and Long
+# Melt the DataFrame from wide to long format
+df_melted = df.melt(id_vars=['Station', 'LAT', 'LONG'], 
+                    value_vars=day_columns, 
+                    var_name='Date', 
+                    value_name='RF')
+
+# Convert 'Date' to actual date format (August 1-31, 2024) and keep only the date part
+df_melted['Date'] = pd.to_datetime(df_melted['Date'], format='%d').map(lambda x: x.replace(month=8, year=2024)).dt.date
+
+# Ensure lat and long are numeric
+df_melted['LAT'] = pd.to_numeric(df_melted['LAT'], errors='coerce')
+df_melted['LONG'] = pd.to_numeric(df_melted['LONG'], errors='coerce')
+df_melted['RF'] = pd.to_numeric(df_melted['RF'], errors='coerce')
+
+# Save the transformed data to an Excel file
+output_file = 'C:\\Users\\hp\\Desktop\\august_2024_rainfall_long_format.xlsx'
+df_melted.to_excel(output_file, index=False)
+
+# Display the first few rows of the transformed data
+#df_melted.head()
