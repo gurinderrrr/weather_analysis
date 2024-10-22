@@ -73,4 +73,4 @@ print(mah['geometry'].head(1))
 
 
 # Step 4: Save the subset as a new shapefile
-mah.to_file('C:\\Users\\hp\\Desktop\\gurinder\\python test\\maharashtra all districts.shp')
+mah.to_file('C:\\Users\\hp\\Desktop\\gurinder\\filtered shape files\\maharashtra all districts.shp')

@@ -33,11 +33,21 @@ df = pd.read_excel(file_path)
 
 
 
-# Filter out rows with invalid lat/long (e.g., 0.00 or 99.99)
-df_filtered = df[((df['LAT'] != 0) & (df['LONG'] != 0)) & ((df['LAT'] != 99.99) & (df['LONG'] != 99.99))]
-
+# Filter out rows with invalid lat/long (e.g., 0.00 or 9999 or nan)
+df_filtered = df[
+    ((df['LAT'] != 0) & (df['LONG'] != 0)) &
+    ((df['LAT'] != 9999) & (df['LONG'] != 9999)) &
+    (pd.notna(df['LAT']) & pd.notna(df['LONG']))
+    
+]
 df=df_filtered.copy()
 del df_filtered
+
+df['LAT_FILTERED']=df['LAT']/100
+df['LONG_FILTERED']=df['LONG']/100
+
+del df['LAT']
+del df['LONG']
 
 
 # Assign day numbers as column headers for the 31 rainfall columns
@@ -53,10 +63,19 @@ df_melted = df.melt(id_vars=['Station', 'LAT', 'LONG'],
 # Convert 'Date' to actual date format (August 1-31, 2024) and keep only the date part
 df_melted['Date'] = pd.to_datetime(df_melted['Date'], format='%d').map(lambda x: x.replace(month=8, year=2024)).dt.date
 
+df_rf_filtered = df_melted[(pd.notna(df_melted['RF']))]
+
+df_melted=df_rf_filtered.copy()
+del df_rf_filtered
+
+
+
 # Ensure lat and long are numeric
 df_melted['LAT'] = pd.to_numeric(df_melted['LAT'], errors='coerce')
 df_melted['LONG'] = pd.to_numeric(df_melted['LONG'], errors='coerce')
 df_melted['RF'] = pd.to_numeric(df_melted['RF'], errors='coerce')
+
+
 
 # Save the transformed data to an Excel file
 output_file = 'C:\\Users\\hp\\Desktop\\august_2024_rainfall_long_format.xlsx'
@@ -82,7 +101,7 @@ excel_file_path = 'C:\\Users\\hp\\Desktop\\august_2024_rainfall_long_format.xlsx
 df = pd.read_excel(excel_file_path)
 
 # Step 2: Read the shapefile
-shapefile_path = "C:\\Users\\hp\\Desktop\\gurinder\\filtered shape files\\maharashtra district excluding vidarbha.shp"
+shapefile_path = "C:\\Users\\hp\\Desktop\\gurinder\\filtered shape files\\maharashtra all districts.shp"
 gdf = gpd.read_file(shapefile_path)
 
 
