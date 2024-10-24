@@ -140,13 +140,13 @@ for date in df_melted['Date'].unique():
             color=daily_data['color'],  # Color based on RF values
             size=10  # Marker size
         ),
-        text=daily_data.apply(
-        lambda row: (
-            f"Station: {row['Station']}<br>"
-            f"Rainfall: {'DATA NOT AVAILABLE' if pd.isna(row['RF']) else f'{row['RF']} mm'}"
-        ), 
-        axis=1
-    ),
+        text = daily_data.apply(
+    lambda row: (
+        f"Station: {row['Station']}<br>"
+        f"Rainfall: {'DATA NOT AVAILABLE' if pd.isna(row['RF']) else f'{row['RF']} mm'}"
+    ), 
+    axis=1
+),
     hoverinfo='text',
     name="Rainfall Data Legend"  # Name this trace for the legend
     ))

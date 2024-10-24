@@ -265,7 +265,7 @@ today_03_mh.columns =today_03_mh.columns.str.replace('TEMP DAY MAX. (\'C)', 'MAX
 today_03_mh.columns =today_03_mh.columns.str.replace('MSLP (hPa / gpm)', 'MSLP',regex=False)
 
 print(today_03_mh)
-exit()
+#exit()
 # Filter rows where 'REPORT' does not start with 'BBXX' and 'date' equals '03'
 today_03_mh = today_03_mh[(today_03_mh['TIME (UTC)'] == 00)|(today_03_mh['TIME (UTC)'] == 3)|(today_03_mh['TIME (UTC)'] == 6)|(today_03_mh['TIME (UTC)'] == 9)|(today_03_mh['TIME (UTC)'] == 12)|(today_03_mh['TIME (UTC)'] == 15)|(today_03_mh['TIME (UTC)'] == 18)]
 
@@ -274,7 +274,7 @@ today_03_mh = today_03_mh[(today_03_mh['TIME (UTC)'] == 00)|(today_03_mh['TIME (
 combined_all_03_stations = aws_mh_df.merge(today_03_mh, on='STATIONS', how='left')
 
 print(combined_all_03_stations)
-exit()
+#exit()
 
 
 combined_all_03_stations.to_excel('C:\\Users\\hp\\Desktop\\test rimc ogi.xlsx', index=False)
